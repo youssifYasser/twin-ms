@@ -39,7 +39,7 @@ const createStatisticsEntry = (
     title,
     value: value.toString(),
     percentageChange,
-    trendGraph: '/src/assets/shapes/trend-up-1.png',
+    trendGraph: 'src/assets/shapes/trend-up-1.png',
     measurementUnit,
     floorId,
     unitId,
@@ -421,7 +421,7 @@ const aggregateStatistics = (
       ).toFixed(1)
     ),
     measurementUnit: data.measurementUnit || '',
-    trendGraph: data.trendGraph || '/src/assets/shapes/trend-up-1.png',
+    trendGraph: data.trendGraph || 'src/assets/shapes/trend-up-1.png',
   }))
 }
 
@@ -449,7 +449,7 @@ export const getSystemControlStatistics = (
           ? `${stat.base}${stat.unit}`
           : `${stat.base}/${stat.total}`,
       percentageChange: [1.3, 3.4, 2.0, 3.0][index],
-      trendGraph: `/src/assets/shapes/trend-up-${(index % 3) + 1}.png`,
+      trendGraph: `src/assets/shapes/trend-up-${(index % 3) + 1}.png`,
     }))
   }
 
@@ -467,7 +467,7 @@ export const getSystemControlStatistics = (
           ? `${adjustedBase}${stat.unit}`
           : `${adjustedBase}/${adjustedTotal}`,
       percentageChange: [1.3, 3.4, 2.0, 3.0][index],
-      trendGraph: `/src/assets/shapes/trend-up-${(index % 3) + 1}.png`,
+      trendGraph: `src/assets/shapes/trend-up-${(index % 3) + 1}.png`,
     }
   })
 }
