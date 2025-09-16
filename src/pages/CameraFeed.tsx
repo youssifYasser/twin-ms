@@ -3,7 +3,6 @@ import { DownloadIcon, RefreshIcon, SnapshotIcon } from '@/icons'
 import { CameraOfflineIcon } from '@/icons/system'
 import { useFilter } from '@/context/FilterContext'
 import { getFilteredCameras, getFilteredCameraStats } from '@/utils/dataFilters'
-import type { AIDetection } from '@/data/camerasData'
 
 const CameraFeed = () => {
   const [activeTab, setActiveTab] = useState<'live' | 'ai'>('ai')

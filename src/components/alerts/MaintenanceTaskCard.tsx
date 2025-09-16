@@ -1,5 +1,5 @@
 import { CalendarIcon, ClockIcon, PersonIcon } from '@/icons'
-import { AlertStatusType, MaintenanceTaskType } from '@/types'
+import { MaintenanceTaskType } from '@/types'
 
 interface MaintenanceTaskCardProps {
   task: MaintenanceTaskType
