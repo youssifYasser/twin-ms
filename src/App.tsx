@@ -6,6 +6,7 @@ import SystemControl from '@/pages/SystemControl'
 import AlertsMaintenance from '@/pages/AlertsMaintenance'
 import CameraFeed from '@/pages/CameraFeed'
 import { FilterProvider } from '@/context/FilterContext'
+import { WebSocketProvider } from '@/context/WebSocketContext'
 
 export type PageType =
   | 'statistics'
@@ -35,11 +36,13 @@ function App() {
   }
 
   return (
-    <FilterProvider>
-      <Layout currentPage={currentPage} onPageChange={setCurrentPage}>
-        {renderPage()}
-      </Layout>
-    </FilterProvider>
+    <WebSocketProvider>
+      <FilterProvider>
+        <Layout currentPage={currentPage} onPageChange={setCurrentPage}>
+          {renderPage()}
+        </Layout>
+      </FilterProvider>
+    </WebSocketProvider>
   )
 }
 

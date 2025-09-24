@@ -10,7 +10,7 @@ interface LayoutProps {
 }
 
 const Layout = ({ children, currentPage, onPageChange }: LayoutProps) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const handleToggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen)

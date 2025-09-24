@@ -50,7 +50,7 @@ const AlertsMaintenance = () => {
       {/* Display current filter information */}
       {filterState.selectedFloor !== 'All Floors' && (
         <div className='bg-bg-card backdrop-blur-24 p-4 rounded-lg border border-primary-border'>
-          <p className='text-white text-sm'>
+          <p className='text-white text-center text-lg'>
             Showing alerts for:{' '}
             <span className='font-bold text-active-page'>
               {filterState.selectedFloor}

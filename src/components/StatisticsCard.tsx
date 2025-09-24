@@ -14,11 +14,6 @@ const StatisticsCard = ({
     percentageChange,
   },
 }: StatisticsCardProps) => {
-  console.log('Rendering StatisticsCard:', {
-    title,
-    value,
-    percentageChange,
-  })
   return (
     <div
       className={`bg-bg-card p-4 backdrop-blur-24 flex flex-col items-start justify-between gap-2 rounded-none w-full`}

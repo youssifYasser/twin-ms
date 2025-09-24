@@ -46,6 +46,9 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
     }
   }
 
+  console.log('floors: ', getFloorOptions())
+  console.log('units: ', getUnitOptions())
+
   return (
     <header className='bg-appbar-gradient border-b border-primary-border backdrop-blur-24 shadow-appbar z-50'>
       <div className='flex items-center justify-between px-6 py-4 shadow-lg'>
@@ -88,6 +91,9 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
               buttonClassName='rounded-none'
             />
           )}
+
+          {/* WebSocket Connection Status */}
+          {/* <WebSocketStatus /> */}
 
           {/* Refresh Status Button */}
           <button

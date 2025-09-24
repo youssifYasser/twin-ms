@@ -152,12 +152,30 @@ export const getUnitIdFromDisplayName = (
   floorId: string,
   displayName: string
 ): string | null => {
+  console.log(
+    `Getting unit ID for floorId=${floorId}, displayName=${displayName}`
+  )
   if (displayName === 'All Units') return 'all'
   const floor = getFloorById(floorId)
   if (!floor) return null
 
   const unit = floor.units.find((unit) => unit.displayName === displayName)
   return unit ? unit.id : null
+}
+
+// Convert IDs back to display names for UI updates
+export const getFloorDisplayNameFromId = (floorId: string): string => {
+  if (floorId === 'all') return 'All Floors'
+
+  const floor = getFloorById(floorId)
+  return floor ? floor.displayName : 'All Floors'
+}
+
+export const getUnitDisplayNameFromId = (unitId: string): string => {
+  if (unitId === 'all') return 'All Units'
+
+  const unit = getUnitById(unitId)
+  return unit ? unit.displayName : 'All Units'
 }
 
 export default BUILDING_DATA
