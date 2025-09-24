@@ -10,8 +10,6 @@ import {
   getUnitDropdownOptions,
   getFloorIdFromDisplayName,
   getUnitIdFromDisplayName,
-  getFloorDisplayNameFromId,
-  getUnitDisplayNameFromId,
 } from '@/data/buildingData'
 import { useWebSocket } from './WebSocketContext'
 
