@@ -3,8 +3,9 @@ import { PresetCard } from '@/components/system'
 import DeviceControlCard from '@/components/system/DeviceControlCard'
 import { LightControlIcon, WindIcon, SecurityIcon, ElevatorIcon } from '@/icons'
 import { DeviceType } from '@/types'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { useFilter } from '@/context/FilterContext'
+import { useWebSocket } from '@/context/WebSocketContext'
 import {
   getFilteredSystemControlStats,
   getFilteredDevices,
@@ -22,6 +23,68 @@ const SystemControl = () => {
     useState<DeviceType>('Lighting')
 
   const { filterState } = useFilter()
+  const { sendDeviceControl } = useWebSocket()
+
+  // Debounce timers for value changes
+  const debounceTimers = useRef<{ [key: string]: NodeJS.Timeout }>({})
+
+  // Get current floor and unit for WebSocket messages
+  const getCurrentLocation = useCallback(() => {
+    let floor = 'all'
+    let unit = 'all'
+
+    if (filterState.selectedFloorId !== 'all') {
+      if (filterState.selectedFloorId === 'basement') {
+        floor = 'basement'
+      } else if (filterState.selectedFloorId === 'roof') {
+        floor = 'roof'
+      } else if (filterState.selectedFloorId?.startsWith('floor_')) {
+        floor = filterState.selectedFloorId.replace('floor_', '')
+      }
+    }
+
+    if (filterState.selectedUnitId !== 'all') {
+      if (
+        filterState.selectedFloorId === 'basement' ||
+        filterState.selectedFloorId === 'roof'
+      ) {
+        unit = 'all'
+      } else {
+        unit = filterState.selectedUnit.replace('Unit ', '') || 'all'
+      }
+    }
+
+    return { floor, unit }
+  }, [
+    filterState.selectedFloorId,
+    filterState.selectedUnitId,
+    filterState.selectedUnit,
+  ])
+
+  // Send device control message to server
+  const sendDeviceUpdate = useCallback(
+    (deviceType: DeviceType, status: string, value?: string) => {
+      let asset = ''
+
+      switch (deviceType) {
+        case 'Lighting':
+          asset = 'light'
+          break
+        case 'HVAC':
+          asset = 'hvac'
+          break
+        case 'Security':
+          asset = 'security'
+          break
+        case 'Elevators':
+          asset = 'elevators'
+          break
+      }
+
+      sendDeviceControl(asset, status, value)
+    },
+    [getCurrentLocation, sendDeviceControl]
+  )
 
   // Get filtered data based on current floor/unit selection
   const statisticsData = useMemo(() => {
@@ -47,6 +110,16 @@ const SystemControl = () => {
 
   // Device state management
   const [deviceData, setDeviceData] = useState<LocationDeviceType[]>(allDevices)
+
+  // Cleanup debounce timers on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimers.current).forEach((timer) =>
+        clearTimeout(timer)
+      )
+      debounceTimers.current = {}
+    }
+  }, [])
 
   // Update device data when filters change
   useMemo(() => {
@@ -74,15 +147,55 @@ const SystemControl = () => {
     }
   }
 
-  // Update individual device
+  // Update individual device with WebSocket integration
   const updateDevice = (
     deviceId: string,
     updates: Partial<LocationDeviceType>
   ) => {
     setDeviceData((prevData) =>
-      prevData.map((device) =>
-        device.id === deviceId ? { ...device, ...updates } : device
-      )
+      prevData.map((device) => {
+        if (device.id === deviceId) {
+          const updatedDevice = { ...device, ...updates }
+
+          // Send WebSocket message for device control changes
+          const deviceType = updatedDevice.deviceType
+          const isOn = updatedDevice.isOn
+          const progress = updatedDevice.progress
+
+          if ('isOn' in updates) {
+            // Status change (on/off)
+            const status = isOn ? '1' : '0'
+
+            if (deviceType === 'Lighting' || deviceType === 'HVAC') {
+              // For lighting and HVAC, include value
+              const value = isOn ? progress.toString() : '0'
+              sendDeviceUpdate(deviceType, status, value)
+            } else {
+              // For security and elevators, status only
+              sendDeviceUpdate(deviceType, status)
+            }
+          } else if ('progress' in updates && isOn) {
+            // Value change with debouncing (only when device is on)
+            const deviceKey = `${deviceId}-progress`
+
+            // Clear existing timer
+            if (debounceTimers.current[deviceKey]) {
+              clearTimeout(debounceTimers.current[deviceKey])
+            }
+
+            // Set new timer for debounced value update
+            debounceTimers.current[deviceKey] = setTimeout(() => {
+              if (deviceType === 'Lighting' || deviceType === 'HVAC') {
+                sendDeviceUpdate(deviceType, '1', progress.toString())
+              }
+              delete debounceTimers.current[deviceKey]
+            }, 500) // 500ms debounce delay
+          }
+
+          return updatedDevice
+        }
+        return device
+      })
     )
   }
 
