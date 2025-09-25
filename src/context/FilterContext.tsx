@@ -36,7 +36,7 @@ interface FilterProviderProps {
 }
 
 export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
-  const { sendFilterUpdate, lastMessage } = useWebSocket()
+  const { sendFilterUpdate, sendConfirmation, lastMessage } = useWebSocket()
 
   const [filterState, setFilterState] = useState<FilterState>({
     selectedFloor: 'All Floors',
@@ -87,57 +87,58 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
   ])
 
   useEffect(() => {
-    console.log('Received lastMessage in FilterContext:', lastMessage)
+    console.log('[FilterContext] Processing server message:', lastMessage)
     if (lastMessage && lastMessage.origin === 'server') {
       const { floor, unit } = lastMessage
 
-      // Convert incoming floor value to proper floor ID
-      let floorId = 'all'
-      if (floor !== 'all') {
-        if (floor === 'basement') {
-          floorId = 'Basement'
-        } else if (floor === 'roof') {
-          floorId = 'Roof'
-        } else {
-          // Regular numbered floor
-          floorId = `Floor ${floor}`
-        }
-      } else {
-        floorId = 'All Floors'
-      }
-
-      // Convert incoming unit value to proper unit ID
-      let unitId = 'all'
-      if (unit !== 'all' && floorId !== 'all') {
-        if (floorId === 'Basement' || floorId === 'Roof') {
-          unitId = 'All Units' // basement and roof only have "all" units
-        } else {
-          // Regular floor unit
-          unitId = `Unit ${unit}`
-        }
-      } else {
-        unitId = 'All Units'
-      }
-
-      // Convert IDs to display names using the new functions
-      setFloor(floorId)
-      setUnit(unitId)
-      // const floorDisplayName = getFloorDisplayNameFromId(floorId)
-      // const unitDisplayName = getUnitDisplayNameFromId(unitId)
-
       console.log(
-        `Converting server message: floor=${floor} -> ${floorId}, unit=${unit} -> ${unitId}`
+        `[FilterContext] Server requested: floor=${floor}, unit=${unit}`
       )
 
-      // Update the filter state with display names
-      // setFilterState({
-      //   selectedFloor: floorDisplayName,
-      //   selectedUnit: unitDisplayName,
-      //   selectedFloorId: floorId,
-      //   selectedUnitId: unitId,
-      // })
+      // Send confirmation back to server instead of triggering filter update
+      const floorDisplay =
+        floor === 'all'
+          ? 'All Floors'
+          : floor === 'basement'
+          ? 'Basement'
+          : floor === 'roof'
+          ? 'Roof'
+          : floor
+
+      const unitDisplay = unit === 'all' ? 'All Units' : unit
+
+      sendConfirmation(floorDisplay, unitDisplay)
+
+      // Convert incoming values to proper display format for UI update
+      let floorDisplayName = 'All Floors'
+      if (floor !== 'all') {
+        if (floor === 'basement') {
+          floorDisplayName = 'Basement'
+        } else if (floor === 'roof') {
+          floorDisplayName = 'Roof'
+        } else {
+          floorDisplayName = `Floor ${floor}`
+        }
+      }
+
+      let unitDisplayName = 'All Units'
+      if (unit !== 'all' && floor !== 'all') {
+        if (floor === 'basement' || floor === 'roof') {
+          unitDisplayName = 'All Units'
+        } else {
+          unitDisplayName = `Unit ${unit}`
+        }
+      }
+
+      console.log(
+        `[FilterContext] Updating UI: ${floorDisplayName} / ${unitDisplayName}`
+      )
+
+      // Update UI directly without triggering filter send
+      setFloor(floorDisplayName)
+      setUnit(unitDisplayName)
     }
-  }, [lastMessage])
+  }, [lastMessage, sendConfirmation])
 
   const setFloor = (floor: string) => {
     const floorId = getFloorIdFromDisplayName(floor)
