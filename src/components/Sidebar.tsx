@@ -69,7 +69,10 @@ const Sidebar = ({
               return (
                 <li key={item.id}>
                   <button
-                    onClick={() => onPageChange(item.id as PageType)}
+                    onClick={() => {
+                      onPageChange(item.id as PageType)
+                      onToggle()
+                    }}
                     className='w-full flex items-center p-3 text-left rounded-lg transition-all duration-200 group'
                   >
                     <IconComponent
