@@ -124,11 +124,10 @@ class WebSocketService {
       return
     }
 
-    const message: WebSocketMessage = {
+    const message = {
       floor,
       unit,
-      timestamp: Date.now(),
-      messageId: this.generateMessageId(),
+      origin: 'client',
     }
 
     try {
@@ -136,6 +135,52 @@ class WebSocketService {
       console.log('[WebSocket] Filter update sent:', message)
     } catch (error) {
       console.error('[WebSocket] Failed to send message:', error)
+    }
+  }
+
+  /**
+   * Send a simple confirmation message to the server
+   */
+  sendConfirmation(floor: string, unit: string): void {
+    if (!this.isConnected()) {
+      console.warn('[WebSocket] Cannot send confirmation - not connected')
+      return
+    }
+
+    const confirmationText = `Floor ${floor} Unit ${unit} Received`
+
+    try {
+      this.ws!.send(confirmationText)
+      console.log('[WebSocket] Confirmation sent:', confirmationText)
+    } catch (error) {
+      console.error('[WebSocket] Failed to send confirmation:', error)
+    }
+  }
+
+  /**
+   * Send a device control message to the server
+   */
+  sendDeviceControl(asset: string, status: string, value?: string): void {
+    if (!this.isConnected()) {
+      console.warn('[WebSocket] Cannot send device control - not connected')
+      return
+    }
+
+    const message: any = {
+      asset,
+      status,
+    }
+
+    // Add value only if provided (for lighting and hvac)
+    if (value !== undefined) {
+      message.value = value
+    }
+
+    try {
+      this.ws!.send(JSON.stringify(message))
+      console.log('[WebSocket] Device control sent:', message)
+    } catch (error) {
+      console.error('[WebSocket] Failed to send device control:', error)
     }
   }
 
@@ -194,11 +239,13 @@ class WebSocketService {
    */
   private cleanup(): void {
     if (this.heartbeatTimer) {
+      console.log('[WebSocket] Clearing heartbeat timer')
       clearInterval(this.heartbeatTimer)
       this.heartbeatTimer = null
     }
 
     if (this.reconnectTimer) {
+      console.log('[WebSocket] Clearing reconnect timer')
       clearTimeout(this.reconnectTimer)
       this.reconnectTimer = null
     }
@@ -208,11 +255,23 @@ class WebSocketService {
    * Start heartbeat mechanism
    */
   private startHeartbeat(): void {
+    // Clear any existing heartbeat timer first
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer)
+      this.heartbeatTimer = null
+    }
+
+    console.log(
+      `[WebSocket] Starting heartbeat with ${this.config.heartbeatInterval}ms interval`
+    )
+
     this.heartbeatTimer = setInterval(() => {
       if (this.isConnected()) {
         // Send ping message to keep connection alive
         try {
-          this.ws!.send(JSON.stringify({ type: 'ping', timestamp: Date.now() }))
+          const pingMessage = { type: 'ping', timestamp: Date.now() }
+          this.ws!.send(JSON.stringify(pingMessage))
+          console.log('[WebSocket] Ping sent:', pingMessage.timestamp)
         } catch (error) {
           console.error('[WebSocket] Heartbeat failed:', error)
         }
@@ -242,13 +301,6 @@ class WebSocketService {
         console.error('[WebSocket] Reconnection failed:', error)
       })
     }, this.config.reconnectInterval)
-  }
-
-  /**
-   * Generate unique message ID
-   */
-  private generateMessageId(): string {
-    return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   }
 }
 

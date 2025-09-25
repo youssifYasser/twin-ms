@@ -17,6 +17,8 @@ interface WebSocketContextType {
   connectionState: string
   isConnected: boolean
   sendFilterUpdate: (floor: string, unit: string) => void
+  sendConfirmation: (floor: string, unit: string) => void
+  sendDeviceControl: (asset: string, status: string, value?: string) => void
   reconnectAttempts: number
   lastMessage: WebSocketMessage | null
 }
@@ -31,7 +33,7 @@ const WS_CONFIG = {
   url: 'wss://4b4f1621-81a5-4f2c-9f4c-b7064b5fce2e-00-4u2a0cmw6vx0.kirk.replit.dev/',
   reconnectInterval: 3000,
   maxReconnectAttempts: 5,
-  heartbeatInterval: 30000,
+  heartbeatInterval: 120000, // 2 minutes = 120,000 milliseconds
 }
 
 const WebSocketContext = createContext<WebSocketContextType | undefined>(
@@ -42,9 +44,10 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   children,
   url = WS_CONFIG.url,
 }) => {
-  const [wsService] = useState(
-    () => new WebSocketService({ ...WS_CONFIG, url })
-  )
+  const [wsService] = useState(() => {
+    console.log('[WebSocket Context] Creating new WebSocket service instance')
+    return new WebSocketService({ ...WS_CONFIG, url })
+  })
   const [connectionState, setConnectionState] = useState<string>('DISCONNECTED')
   const [isConnected, setIsConnected] = useState<boolean>(false)
   const [reconnectAttempts, setReconnectAttempts] = useState<number>(0)
@@ -123,10 +126,34 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     [wsService]
   )
 
+  // Send confirmation function
+  const sendConfirmation = useCallback(
+    (floor: string, unit: string) => {
+      console.log(
+        `[WebSocket Context] Sending confirmation: floor=${floor}, unit=${unit}`
+      )
+      wsService.sendConfirmation(floor, unit)
+    },
+    [wsService]
+  )
+
+  // Send device control function
+  const sendDeviceControl = useCallback(
+    (asset: string, status: string, value?: string) => {
+      console.log(
+        `[WebSocket Context] Sending device control: asset=${asset}, status=${status}, value=${value}`
+      )
+      wsService.sendDeviceControl(asset, status, value)
+    },
+    [wsService]
+  )
+
   const contextValue: WebSocketContextType = {
     connectionState,
     isConnected,
     sendFilterUpdate,
+    sendConfirmation,
+    sendDeviceControl,
     reconnectAttempts,
     lastMessage,
   }
