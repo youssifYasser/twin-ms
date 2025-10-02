@@ -1,7 +1,9 @@
 import { PageType } from '@/App'
 import Logo from '@/components/Logo'
 import { RefreshIcon } from '@/icons'
-import Dropdown from '@/components/Dropdown'
+import FloorUnitFilter from '@/components/FloorUnitFilter'
+import PageStats from '@/components/PageStats'
+import GlobalSearch from '@/components/GlobalSearch'
 import { useFilter } from '@/context/FilterContext'
 import { MenuIcon } from 'lucide-react'
 
@@ -12,22 +14,7 @@ interface AppBarProps {
 }
 
 const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
-  const {
-    filterState,
-    setFloor,
-    setUnit,
-    getFloorOptions,
-    getUnitOptions,
-    resetFilters,
-  } = useFilter()
-
-  const handleFloorChange = (floor: string) => {
-    setFloor(floor)
-  }
-
-  const handleUnitChange = (unit: string) => {
-    setUnit(unit)
-  }
+  const { resetFilters } = useFilter()
 
   const getPageTitle = (page: PageType): string => {
     switch (page) {
@@ -45,9 +32,6 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
         return 'Dashboard'
     }
   }
-
-  console.log('floors: ', getFloorOptions())
-  console.log('units: ', getUnitOptions())
 
   return (
     <header className='bg-appbar-gradient border-b border-primary-border backdrop-blur-24 shadow-appbar z-50'>
@@ -72,32 +56,21 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
         </div>
 
         <div className='flex items-center space-x-4'>
-          {/* Floor Dropdown */}
-          <Dropdown
-            options={getFloorOptions()}
-            value={filterState.selectedFloor}
-            onChange={handleFloorChange}
-            placeholder='Select Floor'
-            buttonClassName='rounded-none'
-          />
+          {/* Global Search */}
+          <GlobalSearch className='w-96' />
 
-          {/* Unit Dropdown - Only show if a specific floor is selected */}
-          {filterState.selectedFloor !== 'All Floors' && (
-            <Dropdown
-              options={getUnitOptions()}
-              value={filterState.selectedUnit}
-              onChange={handleUnitChange}
-              placeholder='Select Unit'
-              buttonClassName='rounded-none'
-            />
-          )}
+          {/* Page Statistics */}
+          <PageStats currentPage={currentPage} />
+
+          {/* Floor & Unit Filter */}
+          <FloorUnitFilter />
 
           {/* WebSocket Connection Status */}
           {/* <WebSocketStatus /> */}
 
           {/* Refresh Status Button */}
           <button
-            className='flex items-center px-4 py-2 bg-active-page text-white text-sm font-roboto hover:bg-[#278372] transition-colors rounded-none'
+            className='flex items-center px-4 py-2 bg-active-page text-white text-sm font-roboto hover:bg-[#278372] transition-colors rounded-lg'
             onClick={resetFilters}
           >
             <RefreshIcon className='mr-2' />
