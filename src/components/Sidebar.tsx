@@ -5,7 +5,6 @@ import { ChevronDown, ChevronRight } from 'lucide-react'
 import {
   StatisticsIcon,
   AlertsMaintenanceIcon,
-  ModelControlIcon,
   CameraIcon,
   SystemIcon,
   SidebarArrowsIcon,
