@@ -7,11 +7,16 @@ import {
   LastUpdate,
 } from '@/components/statistics'
 import { useFilter } from '@/context/FilterContext'
-import { getFilteredStatistics } from '@/utils/dataFilters'
+import { useWebSocket } from '@/context/WebSocketContext'
+import {
+  getFilteredStatistics,
+  getFilteredOccupancy,
+} from '@/utils/dataFilters'
 import { useMemo } from 'react'
 
 const Statistics = () => {
   const { filterState } = useFilter()
+  const { unit501Occupancy } = useWebSocket()
 
   // Get filtered statistics data based on current floor/unit selection
   const statisticsData = useMemo(() => {
@@ -20,6 +25,18 @@ const Statistics = () => {
       selectedUnitId: filterState.selectedUnitId,
     })
   }, [filterState.selectedFloorId, filterState.selectedUnitId])
+
+  // Get occupancy data (refresh when Unit 501 occupancy changes)
+  const occupancyData = useMemo(() => {
+    return getFilteredOccupancy({
+      selectedFloorId: filterState.selectedFloorId,
+      selectedUnitId: filterState.selectedUnitId,
+    })
+  }, [
+    filterState.selectedFloorId,
+    filterState.selectedUnitId,
+    unit501Occupancy,
+  ])
 
   return (
     <div className='space-y-6'>
@@ -37,7 +54,7 @@ const Statistics = () => {
         </div>
       )}
 
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6'>
         {/* Filtered Statistics Cards */}
         {statisticsData.map((stat, index) => (
           <StatisticsCard
@@ -45,6 +62,11 @@ const Statistics = () => {
             statisticsItem={stat}
           />
         ))}
+        {/* Occupancy Monitoring Card */}
+        <StatisticsCard
+          key='occupancy-monitoring'
+          statisticsItem={occupancyData}
+        />
       </div>
 
       <div className=' items-start gap-3 w-full grid grid-cols-1 lg:grid-cols-7'>

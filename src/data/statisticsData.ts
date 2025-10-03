@@ -8,6 +8,15 @@ export interface LocationStatisticsType extends StatisticsType {
   location: string // Human-readable location
 }
 
+// Occupancy data interface
+export interface OccupancyData {
+  floorId: string
+  unitId: string
+  location: string
+  currentOccupancy: number
+  maxCapacity: number
+}
+
 // Consumption chart data interfaces
 export interface ConsumptionChartData {
   floorId: string
@@ -49,6 +58,29 @@ const createStatisticsEntry = (
 
 // Generate realistic data for each floor and unit
 export const STATISTICS_DATA: LocationStatisticsType[] = []
+
+// Generate occupancy data for all units (6 person capacity each)
+export const OCCUPANCY_DATA: OccupancyData[] = []
+
+// Initialize occupancy data
+BUILDING_DATA.forEach((floor) => {
+  if (floor.id !== 'basement' && floor.id !== 'roof') {
+    // Regular floors - individual unit occupancy
+    floor.units.forEach((unit) => {
+      if (!unit.id.includes('_all')) {
+        const isUnit501 = floor.id === 'floor_5' && unit.id === 'floor_5_unit_1'
+
+        OCCUPANCY_DATA.push({
+          floorId: floor.id,
+          unitId: unit.id,
+          location: unit.displayName,
+          currentOccupancy: isUnit501 ? 0 : Math.floor(Math.random() * 6), // Unit 501 starts at 0, others random
+          maxCapacity: 6,
+        })
+      }
+    })
+  }
+})
 
 // Generate data for each floor and their units
 BUILDING_DATA.forEach((floor) => {
@@ -378,6 +410,69 @@ export const getStatisticsForFilter = (
   }
 
   return []
+}
+
+// Get occupancy statistics for current filter
+export const getOccupancyForFilter = (
+  selectedFloorId: string | null,
+  selectedUnitId: string | null
+): StatisticsType => {
+  let totalOccupancy = 0
+  let totalCapacity = 0
+
+  // All floors - aggregate all occupancy data
+  if (selectedFloorId === 'all') {
+    OCCUPANCY_DATA.forEach((occupancy) => {
+      totalOccupancy += occupancy.currentOccupancy
+      totalCapacity += occupancy.maxCapacity
+    })
+  }
+  // All units in a specific floor
+  else if (selectedFloorId && selectedUnitId === 'all') {
+    const floorOccupancy = OCCUPANCY_DATA.filter(
+      (occupancy) => occupancy.floorId === selectedFloorId
+    )
+    floorOccupancy.forEach((occupancy) => {
+      totalOccupancy += occupancy.currentOccupancy
+      totalCapacity += occupancy.maxCapacity
+    })
+  }
+  // Specific unit
+  else if (selectedFloorId && selectedUnitId && selectedUnitId !== 'all') {
+    const unitOccupancy = OCCUPANCY_DATA.find(
+      (occupancy) =>
+        occupancy.floorId === selectedFloorId &&
+        occupancy.unitId === selectedUnitId
+    )
+    if (unitOccupancy) {
+      totalOccupancy = unitOccupancy.currentOccupancy
+      totalCapacity = unitOccupancy.maxCapacity
+    }
+  }
+
+  return {
+    title: 'Occupancy Monitoring',
+    value: `${totalOccupancy}/${totalCapacity}`,
+    percentageChange: 2.5,
+    trendGraph: '/images/shapes/trend-up-2.png',
+    measurementUnit: '',
+  }
+}
+
+// Update occupancy for Unit 501 (WebSocket integration)
+export const updateUnit501Occupancy = (): number => {
+  const unit501 = OCCUPANCY_DATA.find(
+    (occupancy) =>
+      occupancy.floorId === 'floor_5' && occupancy.unitId === 'floor_5_unit_1'
+  )
+
+  if (unit501) {
+    // Toggle between adding and removing 1 person
+    unit501.currentOccupancy = unit501.currentOccupancy === 0 ? 1 : 0
+    return unit501.currentOccupancy
+  }
+
+  return 0
 }
 
 // Aggregate statistics across all floors/units

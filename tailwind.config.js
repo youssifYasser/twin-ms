@@ -14,7 +14,7 @@ export default {
           border: 'rgba(55, 65, 81, 0.5)',
         },
         'active-page': 'rgba(59, 160, 145, 1)',
-        'bg-card': 'rgb(8, 20, 30)',
+        'bg-card': 'rgb(8, 19, 28)',
       },
       backgroundImage: {
         'sidebar-gradient':

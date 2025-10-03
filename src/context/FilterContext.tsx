@@ -45,8 +45,18 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
     selectedUnitId: 'all',
   })
 
-  // Send filter updates via WebSocket
+  // Flag to prevent circular updates when server changes filters
+  const [isServerUpdate, setIsServerUpdate] = useState(false)
+
+  // Send filter updates via WebSocket (only for user-initiated changes)
   useEffect(() => {
+    console.log('updaing the server with new filter state, ', isServerUpdate)
+    // Skip sending update if this is a server-initiated change
+    if (isServerUpdate) {
+      setIsServerUpdate(false) // Reset the flag
+      return
+    }
+
     let floorValue = 'all'
     let unitValue = 'all'
 
@@ -76,7 +86,7 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
     }
 
     console.log(
-      `Sending WebSocket update: floor=${floorValue}, unit=${unitValue}`
+      `[FilterContext] Sending WebSocket update: floor=${floorValue}, unit=${unitValue}`
     )
     sendFilterUpdate(floorValue, unitValue)
   }, [
@@ -84,30 +94,31 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
     filterState.selectedUnitId,
     filterState.selectedUnit,
     sendFilterUpdate,
+    // Remove isServerUpdate from dependencies to prevent re-running when flag changes
   ])
 
   useEffect(() => {
     console.log('[FilterContext] Processing server message:', lastMessage)
-    if (lastMessage && lastMessage.origin === 'server') {
+    if (lastMessage) {
       const { floor, unit } = lastMessage
 
       console.log(
         `[FilterContext] Server requested: floor=${floor}, unit=${unit}`
       )
 
-      // Send confirmation back to server instead of triggering filter update
-      const floorDisplay =
-        floor === 'all'
-          ? 'All Floors'
-          : floor === 'basement'
-          ? 'Basement'
-          : floor === 'roof'
-          ? 'Roof'
-          : floor
+      // // Send confirmation back to server instead of triggering filter update
+      // const floorDisplay =
+      //   floor === 'all'
+      //     ? 'All Floors'
+      //     : floor === 'basement'
+      //     ? 'Basement'
+      //     : floor === 'roof'
+      //     ? 'Roof'
+      //     : floor
 
-      const unitDisplay = unit === 'all' ? 'All Units' : unit
+      // const unitDisplay = unit === 'all' ? 'All Units' : unit
 
-      sendConfirmation(floorDisplay, unitDisplay)
+      // sendConfirmation(floorDisplay, unitDisplay)
 
       // Convert incoming values to proper display format for UI update
       let floorDisplayName = 'All Floors'
@@ -126,13 +137,16 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
         if (floor === 'basement' || floor === 'roof') {
           unitDisplayName = 'All Units'
         } else {
-          unitDisplayName = `Unit ${unit}`
+          unitDisplayName = `Unit ${floor}01` // Convert floor number to unit format
         }
       }
 
       console.log(
         `[FilterContext] Updating UI: ${floorDisplayName} / ${unitDisplayName}`
       )
+
+      // Set flag to indicate this is a server update
+      setIsServerUpdate(true)
 
       // Update UI directly without triggering filter send
       setFloor(floorDisplayName)

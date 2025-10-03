@@ -12,6 +12,7 @@ import WebSocketService, {
   WebSocketMessage,
   WebSocketEventCallbacks,
 } from '@/services/websocket'
+import { updateUnit501Occupancy } from '@/data/statisticsData'
 
 interface WebSocketContextType {
   connectionState: string
@@ -21,6 +22,7 @@ interface WebSocketContextType {
   sendDeviceControl: (asset: string, status: string, value?: string) => void
   reconnectAttempts: number
   lastMessage: WebSocketMessage | null
+  unit501Occupancy: number
 }
 
 interface WebSocketProviderProps {
@@ -30,7 +32,8 @@ interface WebSocketProviderProps {
 
 // WebSocket configuration
 const WS_CONFIG = {
-  url: 'wss://4b4f1621-81a5-4f2c-9f4c-b7064b5fce2e-00-4u2a0cmw6vx0.kirk.replit.dev/',
+  // url: 'wss://4b4f1621-81a5-4f2c-9f4c-b7064b5fce2e-00-4u2a0cmw6vx0.kirk.replit.dev/',
+  url: 'ws://localhost:5000',
   reconnectInterval: 3000,
   maxReconnectAttempts: 5,
   heartbeatInterval: 120000, // 2 minutes = 120,000 milliseconds
@@ -52,43 +55,71 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   const [isConnected, setIsConnected] = useState<boolean>(false)
   const [reconnectAttempts, setReconnectAttempts] = useState<number>(0)
   const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null)
+  const [lastSentMessage, setLastSentMessage] =
+    useState<WebSocketMessage | null>(null)
+  const [unit501Occupancy, setUnit501Occupancy] = useState<number>(0)
 
-  // WebSocket event callbacks
+  // WebSocket event callbacks with useCallback to prevent re-registration
+  const onOpen = useCallback(() => {
+    console.log('[WebSocket Context] Connection established')
+    setConnectionState('CONNECTED')
+    setIsConnected(true)
+    setReconnectAttempts(0)
+  }, [])
+
+  const onClose = useCallback((event: CloseEvent) => {
+    console.log('[WebSocket Context] Connection closed', event.code)
+    setConnectionState('DISCONNECTED')
+    setIsConnected(false)
+  }, [])
+
+  const onError = useCallback((error: Event) => {
+    console.error('[WebSocket Context] Connection error:', error)
+    setConnectionState('ERROR')
+    setIsConnected(false)
+  }, [])
+
+  const onMessage = useCallback((message: WebSocketMessage) => {
+    console.log(
+      '[WebSocket Context] Processing message:',
+      JSON.stringify(message)
+    )
+
+    // if (message.origin === 'server') {
+    //   if (message == lastMessage) return // Ignore duplicate messages
+    //   setLastMessage(message)
+    //   console.log('Received floor:', message.floor, 'unit:', message.unit)
+    // }
+
+    // Handle occupancy messages for Unit 501
+    if (message.occupancy && message.occupancy === '1') {
+      console.log('[WebSocket Context] Occupancy message received for Unit 501')
+      const newOccupancy = updateUnit501Occupancy()
+      setUnit501Occupancy(newOccupancy)
+      console.log(
+        `[WebSocket Context] Unit 501 occupancy updated to: ${newOccupancy}`
+      )
+    }
+
+    if (message == lastMessage) return // Ignore duplicate messages
+    setLastMessage(message)
+
+    // Here you can add logic to handle incoming filter updates
+    // For example, updating the UI based on server messages
+  }, [])
+
+  const onReconnecting = useCallback((attempt: number) => {
+    console.log(`[WebSocket Context] Reconnecting... attempt ${attempt}`)
+    setConnectionState('RECONNECTING')
+    setReconnectAttempts(attempt)
+  }, [])
+
   const callbacks: WebSocketEventCallbacks = {
-    onOpen: () => {
-      console.log('[WebSocket Context] Connection established')
-      setConnectionState('CONNECTED')
-      setIsConnected(true)
-      setReconnectAttempts(0)
-    },
-
-    onClose: (event) => {
-      console.log('[WebSocket Context] Connection closed', event.code)
-      setConnectionState('DISCONNECTED')
-      setIsConnected(false)
-    },
-
-    onError: (error) => {
-      console.error('[WebSocket Context] Connection error:', error)
-      setConnectionState('ERROR')
-      setIsConnected(false)
-    },
-
-    onMessage: (message) => {
-      if (message.origin === 'server') {
-        setLastMessage(message)
-        console.log('Received floor:', message.floor, 'unit:', message.unit)
-      }
-
-      // Here you can add logic to handle incoming filter updates
-      // For example, updating the UI based on server messages
-    },
-
-    onReconnecting: (attempt) => {
-      console.log(`[WebSocket Context] Reconnecting... attempt ${attempt}`)
-      setConnectionState('RECONNECTING')
-      setReconnectAttempts(attempt)
-    },
+    onOpen,
+    onClose,
+    onError,
+    onMessage,
+    onReconnecting,
   }
 
   // Initialize WebSocket connection
@@ -113,7 +144,8 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       clearInterval(stateUpdateInterval)
       wsService.disconnect()
     }
-  }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wsService]) // Only depend on wsService, callbacks are stable with useCallback
 
   // Send filter update function
   const sendFilterUpdate = useCallback(
@@ -132,6 +164,15 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       console.log(
         `[WebSocket Context] Sending confirmation: floor=${floor}, unit=${unit}`
       )
+      if (
+        lastSentMessage &&
+        lastSentMessage.floor === floor &&
+        lastSentMessage.unit === unit
+      ) {
+        console.log('[WebSocket Context] Duplicate confirmation ignored')
+        return // Ignore duplicate confirmations
+      }
+      setLastSentMessage({ floor, unit, origin: 'client' })
       wsService.sendConfirmation(floor, unit)
     },
     [wsService]
@@ -156,6 +197,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     sendDeviceControl,
     reconnectAttempts,
     lastMessage,
+    unit501Occupancy,
   }
 
   return (

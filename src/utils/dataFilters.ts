@@ -5,6 +5,7 @@ import {
   getStatisticsForFilter,
   getSystemControlStatistics,
   getConsumptionDataForFilter,
+  getOccupancyForFilter,
   LocationStatisticsType,
   ConsumptionChartData,
 } from '@/data/statisticsData'
@@ -37,6 +38,15 @@ export const getFilteredStatistics = (
   filterParams: FilterParams
 ): StatisticsType[] => {
   return getStatisticsForFilter(
+    filterParams.selectedFloorId,
+    filterParams.selectedUnitId
+  )
+}
+
+export const getFilteredOccupancy = (
+  filterParams: FilterParams
+): StatisticsType => {
+  return getOccupancyForFilter(
     filterParams.selectedFloorId,
     filterParams.selectedUnitId
   )
@@ -222,6 +232,7 @@ export const memoizeFilterResults = <T>(
 export const getAllFilteredData = (filterParams: FilterParams) => {
   return {
     statistics: getFilteredStatistics(filterParams),
+    occupancy: getFilteredOccupancy(filterParams),
     systemControlStats: getFilteredSystemControlStats(filterParams),
     devices: getFilteredDevices(filterParams),
     deviceCounts: getFilteredDeviceCounts(filterParams),
@@ -233,6 +244,7 @@ export const getAllFilteredData = (filterParams: FilterParams) => {
 
 export default {
   getFilteredStatistics,
+  getFilteredOccupancy,
   getFilteredSystemControlStats,
   getFilteredDevices,
   getFilteredDeviceCounts,

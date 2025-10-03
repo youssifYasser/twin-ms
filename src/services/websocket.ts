@@ -7,6 +7,7 @@ export interface WebSocketMessage {
   timestamp?: number
   messageId?: string
   origin?: 'client' | 'server'
+  occupancy?: string // For occupancy monitoring messages
 }
 
 export interface WebSocketConfig {
@@ -89,15 +90,26 @@ class WebSocketService {
 
         this.ws.onmessage = (event) => {
           try {
-            const message: WebSocketMessage = JSON.parse(event.data)
-            console.log('[WebSocket] Message received:', message)
-            if (message.floor && message.unit) {
-              this.callbacks.onMessage?.({
-                floor: message.floor,
-                unit: message.unit,
-              })
+            if (
+              event.data.toLowerCase().includes('welcome') ||
+              event.data.toLowerCase().includes('received')
+            ) {
+              return // Ignore welcome messages
             }
-            this.callbacks.onMessage?.(message)
+            const message: WebSocketMessage = JSON.parse(event.data)
+
+            // Handle different message types - call callback only once
+            if (message.occupancy) {
+              // Occupancy message - pass as is
+              this.callbacks.onMessage?.(message)
+            } else if (
+              message.floor &&
+              message.unit &&
+              message.origin === 'server'
+            ) {
+              // Filter message
+              this.callbacks.onMessage?.(message)
+            }
           } catch (error) {
             console.error(
               '[WebSocket] Failed to parse message:',
@@ -147,7 +159,7 @@ class WebSocketService {
       return
     }
 
-    const confirmationText = `Floor ${floor} Unit ${unit} Received`
+    const confirmationText = `TATAKAE ${floor} Unit ${unit} Received`
 
     try {
       this.ws!.send(confirmationText)
@@ -185,10 +197,10 @@ class WebSocketService {
   }
 
   /**
-   * Register event callbacks
+   * Register event callbacks - replaces existing callbacks
    */
   on(callbacks: WebSocketEventCallbacks): void {
-    this.callbacks = { ...this.callbacks, ...callbacks }
+    this.callbacks = callbacks // Replace instead of merge to prevent accumulation
   }
 
   /**
