@@ -5,6 +5,8 @@ import Model3DControl from '@/pages/Model3DControl'
 import SystemControl from '@/pages/SystemControl'
 import AlertsMaintenance from '@/pages/AlertsMaintenance'
 import CameraFeed from '@/pages/CameraFeed'
+import Permissions from '@/pages/Permissions'
+import AssetInventory from '@/pages/AssetInventory'
 import { FilterProvider } from '@/context/FilterContext'
 import { WebSocketProvider } from '@/context/WebSocketContext'
 
@@ -14,6 +16,8 @@ export type PageType =
   | 'system-control'
   | 'alerts'
   | 'camera-feed'
+  | 'permissions'
+  | 'asset-inventory'
 
 function App() {
   const [currentPage, setCurrentPage] = useState<PageType>('statistics')
@@ -30,6 +34,10 @@ function App() {
         return <AlertsMaintenance />
       case 'camera-feed':
         return <CameraFeed />
+      case 'permissions':
+        return <Permissions />
+      case 'asset-inventory':
+        return <AssetInventory />
       default:
         return <Statistics />
     }
