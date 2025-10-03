@@ -112,7 +112,7 @@ BUILDING_DATA.forEach((floor) => {
         'HVAC',
         floor.id,
         `${floor.id}_all`,
-        Math.floor(Math.random() * 30 + 18),
+        Math.floor(Math.random() * 16 + 15), // Generate temperature between 15-30°C
         Math.random() > 0.2,
         floor.id === 'basement' ? '1500W' : '2400W'
       )
@@ -279,7 +279,7 @@ DEVICES_DATA.forEach((device) => {
       device.deviceType === 'Lighting'
         ? Math.floor(Math.random() * 30 + 70)
         : device.deviceType === 'HVAC'
-        ? Math.floor(Math.random() * 5 + 20)
+        ? Math.floor(Math.random() * 6 + 20) // Temperature between 20-25°C
         : device.deviceType === 'Security'
         ? Math.random() > 0.7
           ? 100
@@ -294,7 +294,7 @@ DEVICES_DATA.forEach((device) => {
       device.deviceType === 'Lighting'
         ? Math.floor(Math.random() * 20 + 50)
         : device.deviceType === 'HVAC'
-        ? Math.floor(Math.random() * 3 + 19)
+        ? Math.floor(Math.random() * 4 + 19) // Temperature between 19-22°C
         : device.deviceType === 'Security'
         ? Math.random() > 0.7
           ? 100
@@ -311,7 +311,7 @@ DEVICES_DATA.forEach((device) => {
           ? Math.floor(Math.random() * 20 + 40)
           : 0
         : device.deviceType === 'HVAC'
-        ? Math.floor(Math.random() * 3 + 16)
+        ? Math.floor(Math.random() * 4 + 16) // Temperature between 16-19°C
         : device.deviceType === 'Security'
         ? 100
         : device.id === 'elevator_emergency'
@@ -336,7 +336,7 @@ DEVICES_DATA.forEach((device) => {
           : 0
         : device.deviceType === 'HVAC'
         ? device.floorId === 'basement'
-          ? Math.floor(Math.random() * 3 + 15)
+          ? Math.floor(Math.random() * 4 + 15) // Temperature between 15-18°C
           : 0
         : device.deviceType === 'Security'
         ? 100
