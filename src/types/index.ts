@@ -12,3 +12,11 @@ export type {
   PresetDataType,
 } from './SystemControlTypes'
 export type { IconProps, IconComponent } from './IconType'
+export type {
+  Asset,
+  AssetType,
+  AssetStatus,
+  WarrantyStatus,
+  AssetFilters,
+  AddAssetFormData,
+} from './AssetTypes'
