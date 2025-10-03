@@ -189,10 +189,10 @@ const Permissions = () => {
       </div>
 
       {/* Users Table */}
-      <div className='bg-slate-800 rounded-xl overflow-hidden'>
+      <div className='bg-[#0D1B26] rounded-xl overflow-hidden'>
         <div className='overflow-x-auto'>
           <table className='w-full'>
-            <thead className='bg-slate-700'>
+            <thead className='bg-[#0A1620]'>
               <tr>
                 <th className='text-left p-4 font-semibold text-white'>User</th>
                 <th className='text-left p-4 font-semibold text-white'>Role</th>
