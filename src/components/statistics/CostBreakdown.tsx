@@ -35,25 +35,25 @@ const CostBreakdown = () => {
     return [
       {
         label: 'Energy Charges',
-        value: `${energyCost.toLocaleString()} EGP`,
+        value: `${energyCost.toLocaleString()} SAR`,
         progress: parseFloat(((energyCost / totalCost) * 100).toFixed(1)),
         color: '#3B82F6',
       },
       {
         label: 'Demand Charges',
-        value: `${demandCharges.toLocaleString()} EGP`,
+        value: `${demandCharges.toLocaleString()} SAR`,
         progress: parseFloat(((demandCharges / totalCost) * 100).toFixed(1)),
         color: '#A855F7',
       },
       {
         label: 'Water & Utilities',
-        value: `${waterCost.toLocaleString()} EGP`,
+        value: `${waterCost.toLocaleString()} SAR`,
         progress: parseFloat(((waterCost / totalCost) * 100).toFixed(1)),
         color: '#06B6D4',
       },
       {
         label: 'Taxes & Fees',
-        value: `${taxesFees.toLocaleString()} EGP`,
+        value: `${taxesFees.toLocaleString()} SAR`,
         progress: parseFloat(((taxesFees / totalCost) * 100).toFixed(1)),
         color: '#F59E0B',
       },
@@ -82,7 +82,7 @@ const CostBreakdown = () => {
       <div className='border-t border-[#37415180] pt-6 flex items-baseline justify-between'>
         <span className='text-lg font-bold text-white'>Total</span>
         <span className='text-lg font-bold text-[#3BA091]'>
-          {totalCost.toLocaleString()} EGP
+          {totalCost.toLocaleString()} SAR
         </span>
       </div>
     </div>

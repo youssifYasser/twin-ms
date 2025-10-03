@@ -80,7 +80,7 @@ BUILDING_DATA.forEach((floor) => {
         'water price',
         parseFloat((Math.random() * 10 + 20).toFixed(1)),
         2.5,
-        'EGP',
+        'SAR',
         floor.id
       )
     )
@@ -118,7 +118,7 @@ BUILDING_DATA.forEach((floor) => {
             'water price',
             parseFloat((Math.random() * 20 + 40).toFixed(1)),
             2.5,
-            'EGP',
+            'SAR',
             floor.id,
             unit.id
           )
@@ -154,7 +154,7 @@ BUILDING_DATA.forEach((floor) => {
             'water price',
             parseFloat((Math.random() * 8 + 6).toFixed(1)),
             2.5,
-            'EGP',
+            'SAR',
             floor.id,
             unit.id
           )
