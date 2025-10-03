@@ -28,6 +28,10 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
         return 'Alerts & Maintenance'
       case 'camera-feed':
         return 'Camera Feed'
+      case 'permissions':
+        return 'Permissions Management'
+      case 'asset-inventory':
+        return 'Asset Inventory'
       default:
         return 'Dashboard'
     }
@@ -43,10 +47,7 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
                 className='mr-4 cursor-pointer active:scale-90 transition-transform duration-200'
                 onClick={toggleSidebar}
               />
-              <Logo className='w-6 h-6 mr-2' width={24} height={24} />
-              <h1 className='text-xl font-bold font-ibm-plex text-white mr-4'>
-                Twin MS
-              </h1>
+              <Logo className='h-6 mr-4' width={90} height={24} />
               <div className='w-px h-6 bg-primary-border mr-4' />
             </div>
           )}

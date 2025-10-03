@@ -234,7 +234,7 @@ const GlobalSearch = ({ className = '' }: GlobalSearchProps) => {
         <input
           type='text'
           placeholder='Search units, devices, cameras...'
-          className='w-full bg-slate-700 border border-slate-600 rounded-lg pl-10 pr-16 py-2.5 text-white placeholder-slate-400 focus:outline-none focus:border-teal-500 transition-colors'
+          className='w-full bg-slate-700 border border-slate-600 rounded-lg pl-8 pr-16 py-2.5 text-white placeholder-slate-400 focus:outline-none focus:border-teal-500 transition-colors'
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onFocus={() => searchQuery.trim() && setIsOpen(true)}
