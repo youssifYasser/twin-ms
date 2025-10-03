@@ -99,7 +99,7 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
 
   useEffect(() => {
     console.log('[FilterContext] Processing server message:', lastMessage)
-    if (lastMessage) {
+    if (lastMessage && lastMessage.floor && lastMessage.unit) {
       const { floor, unit } = lastMessage
 
       console.log(
@@ -137,7 +137,7 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
         if (floor === 'basement' || floor === 'roof') {
           unitDisplayName = 'All Units'
         } else {
-          unitDisplayName = `Unit ${floor}01` // Convert floor number to unit format
+          unitDisplayName = `Unit ${unit}` // Use the actual unit number from the message
         }
       }
 

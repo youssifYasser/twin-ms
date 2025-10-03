@@ -2,8 +2,8 @@
 // Provides a clean interface for WebSocket operations with automatic reconnection
 
 export interface WebSocketMessage {
-  floor: string
-  unit: string
+  floor?: string // Make optional to support occupancy messages
+  unit?: string // Make optional to support occupancy messages
   timestamp?: number
   messageId?: string
   origin?: 'client' | 'server'
@@ -107,7 +107,7 @@ class WebSocketService {
               message.unit &&
               message.origin === 'server'
             ) {
-              // Filter message
+              // Filter message - only if it has both floor and unit
               this.callbacks.onMessage?.(message)
             }
           } catch (error) {
