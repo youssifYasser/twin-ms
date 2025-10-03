@@ -15,7 +15,7 @@ const MaintenanceTaskCard = ({ task }: MaintenanceTaskCardProps) => {
 
   return (
     <div className='bg-[#1F293766] p-4 rounded-xl w-full flex flex-col items-start gap-3'>
-      <div className='flex items-start gap-2'>
+      <div className='flex items-start justify-between w-full'>
         <div className='flex flex-col items-start gap-2'>
           <h4 className='font-medium text-base text-white'>{task.title}</h4>
           <p className='text-sm text-[#9CA3AF] mb-2'>{task.description}</p>
