@@ -14,6 +14,7 @@ import WebSocketService, {
   WebSocketEventCallbacks,
 } from '@/services/websocket'
 import { updateUnit501Occupancy } from '@/data/statisticsData'
+import { AssetClickMessage } from './AssetPopupContext'
 
 interface WebSocketContextType {
   connectionState: string
@@ -24,17 +25,19 @@ interface WebSocketContextType {
   reconnectAttempts: number
   lastMessage: WebSocketMessage | null
   unit501Occupancy: number
+  onAssetClick?: (message: AssetClickMessage) => void
 }
 
 interface WebSocketProviderProps {
   children: React.ReactNode
   url?: string
+  onAssetClick?: (message: AssetClickMessage) => void
 }
 
 // WebSocket configuration
 const WS_CONFIG = {
-  url: 'wss://4b4f1621-81a5-4f2c-9f4c-b7064b5fce2e-00-4u2a0cmw6vx0.kirk.replit.dev/',
-  // url: 'ws://localhost:5000',
+  // url: 'wss://4b4f1621-81a5-4f2c-9f4c-b7064b5fce2e-00-4u2a0cmw6vx0.kirk.replit.dev/',
+  url: 'ws://localhost:5000',
   reconnectInterval: 3000,
   maxReconnectAttempts: 5,
   heartbeatInterval: 120000, // 2 minutes = 120,000 milliseconds
@@ -47,6 +50,7 @@ const WebSocketContext = createContext<WebSocketContextType | undefined>(
 export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
   children,
   url = WS_CONFIG.url,
+  onAssetClick,
 }) => {
   const [wsService] = useState(() => {
     console.log('[WebSocket Context] Creating new WebSocket service instance')
@@ -90,6 +94,24 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
         JSON.stringify(message)
       )
 
+      // Handle asset click messages for 3D model integration
+      if (message.click && message.floor && message.unit) {
+        console.log(
+          `[WebSocket Context] Asset click received: ${message.click} on ${message.floor}/${message.unit}`
+        )
+        const clickMessage: AssetClickMessage = {
+          click: message.click as AssetClickMessage['click'],
+          floor: message.floor,
+          unit: message.unit,
+        }
+
+        // Trigger asset popup callback
+        if (onAssetClick) {
+          onAssetClick(clickMessage)
+        }
+        return // Don't process as filter message
+      }
+
       // Handle occupancy messages for Unit 501 separately
       if (message.occupancy && message.occupancy === '1') {
         // Debounce occupancy updates to prevent rapid toggling
@@ -132,7 +154,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
       // Here you can add logic to handle incoming filter updates
       // For example, updating the UI based on server messages
     },
-    [] // Remove lastMessage dependency to prevent callback recreation
+    [onAssetClick] // Add onAssetClick to dependencies
   )
 
   const onReconnecting = useCallback((attempt: number) => {
@@ -225,6 +247,7 @@ export const WebSocketProvider: React.FC<WebSocketProviderProps> = ({
     reconnectAttempts,
     lastMessage,
     unit501Occupancy,
+    onAssetClick,
   }
 
   return (

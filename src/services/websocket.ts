@@ -8,6 +8,7 @@ export interface WebSocketMessage {
   messageId?: string
   origin?: 'client' | 'server'
   occupancy?: string // For occupancy monitoring messages
+  click?: 'light' | 'hvac' | 'pump' // For 3D model asset click messages
 }
 
 export interface WebSocketConfig {
@@ -99,7 +100,10 @@ class WebSocketService {
             const message: WebSocketMessage = JSON.parse(event.data)
 
             // Handle different message types - call callback only once
-            if (message.occupancy) {
+            if (message.click && message.floor && message.unit) {
+              // Asset click message from 3D model - pass as is
+              this.callbacks.onMessage?.(message)
+            } else if (message.occupancy) {
               // Occupancy message - pass as is
               this.callbacks.onMessage?.(message)
             } else if (
