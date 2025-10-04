@@ -57,18 +57,6 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
         </div>
 
         <div className='flex items-center space-x-4'>
-          {/* Global Search */}
-          <GlobalSearch className='w-96' />
-
-          {/* Page Statistics */}
-          <PageStats currentPage={currentPage} />
-
-          {/* Floor & Unit Filter */}
-          <FloorUnitFilter />
-
-          {/* WebSocket Connection Status */}
-          {/* <WebSocketStatus /> */}
-
           {/* Real-time Data Toggle */}
           <button
             className={`flex items-center px-4 py-2 text-sm font-roboto transition-all duration-200 rounded-lg ${
@@ -86,8 +74,19 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
             <RealtimeIcon
               className={`mr-2 ${isRealtimeEnabled ? 'animate-pulse' : ''}`}
             />
-            <span>{isRealtimeEnabled ? 'Live Data' : 'Static Data'}</span>
+            <span>Live Data</span>
           </button>
+          {/* Global Search */}
+          <GlobalSearch className='w-96' />
+
+          {/* Page Statistics */}
+          <PageStats currentPage={currentPage} />
+
+          {/* Floor & Unit Filter */}
+          <FloorUnitFilter />
+
+          {/* WebSocket Connection Status */}
+          {/* <WebSocketStatus /> */}
         </div>
       </div>
     </header>
