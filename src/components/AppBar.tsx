@@ -67,8 +67,8 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
             onClick={toggleRealtime}
             title={
               isRealtimeEnabled
-                ? 'Disable Real-time Simulation'
-                : 'Enable Real-time Simulation'
+                ? 'Disable Real-time Data'
+                : 'Enable Real-time Data'
             }
           >
             <RealtimeIcon
