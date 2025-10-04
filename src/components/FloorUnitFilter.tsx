@@ -156,7 +156,7 @@ const FloorUnitFilter = ({ className = '' }: FloorUnitFilterProps) => {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className='absolute top-full left-0 mt-2 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 w-96'>
+        <div className='absolute top-full right-0 mt-2 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 w-96'>
           <div className='p-6'>
             <div className='flex items-center justify-between mb-4'>
               <h3 className='text-lg font-semibold text-white'>
