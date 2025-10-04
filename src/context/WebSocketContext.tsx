@@ -36,8 +36,8 @@ interface WebSocketProviderProps {
 
 // WebSocket configuration
 const WS_CONFIG = {
-  // url: 'wss://4b4f1621-81a5-4f2c-9f4c-b7064b5fce2e-00-4u2a0cmw6vx0.kirk.replit.dev/',
-  url: 'ws://localhost:5000',
+  url: 'wss://4b4f1621-81a5-4f2c-9f4c-b7064b5fce2e-00-4u2a0cmw6vx0.kirk.replit.dev/',
+  // url: 'ws://localhost:5000',
   reconnectInterval: 3000,
   maxReconnectAttempts: 5,
   heartbeatInterval: 120000, // 2 minutes = 120,000 milliseconds
