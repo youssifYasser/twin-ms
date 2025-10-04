@@ -8,6 +8,7 @@ export { default as Dropdown } from './Dropdown'
 export { default as FloorUnitFilter } from './FloorUnitFilter'
 export { default as PageStats } from './PageStats'
 export { default as GlobalSearch } from './GlobalSearch'
+export { default as VideoPlayer } from './VideoPlayer'
 
 // Statistics sub-components
 export * from './statistics'

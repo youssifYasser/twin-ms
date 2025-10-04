@@ -3,6 +3,8 @@ import { DownloadIcon, RefreshIcon, SnapshotIcon } from '@/icons'
 import { CameraOfflineIcon, CogIcon } from '@/icons/system'
 import { useFilter } from '@/context/FilterContext'
 import { getFilteredCameras, getFilteredCameraStats } from '@/utils/dataFilters'
+import { getVideoFeedForCamera } from '@/services/videoService'
+import { VideoPlayer } from '@/components'
 import { LayoutGridIcon, ListIcon } from 'lucide-react'
 
 // View types
@@ -183,7 +185,7 @@ const CameraFeed = () => {
         ) : (
           // List View - Table
           <div className='w-full'>
-            <CameraTable cameras={cameras} />
+            <CameraTable cameras={cameras} activeTab={activeTab} />
           </div>
         )}
       </div>
@@ -199,6 +201,9 @@ const CameraCard = ({
   camera: any
   activeTab: 'live' | 'ai'
 }) => {
+  // Get video feed for this camera
+  const videoFeed = getVideoFeedForCamera(camera.id)
+
   return (
     <div className='bg-[#111827CC] border border-[#37415180] backdrop-blur-24 rounded-2xl overflow-hidden'>
       <div
@@ -242,9 +247,17 @@ const CameraCard = ({
                 )}
               </div>
             ) : (
-              // Live feed mode - show placeholder
-              <div className='h-20 mx-4 bg-gray-900/60 rounded flex items-center justify-center'>
-                <span className='text-gray-400 text-xs'>Live Feed</span>
+              // Live feed mode - show video player
+              <div className='mx-4'>
+                <VideoPlayer
+                  videoFeed={videoFeed}
+                  isVisible={activeTab === 'live'}
+                  className='h-32 w-full'
+                  autoPlay={true}
+                  muted={true}
+                  controls={false}
+                  lazyLoad={true}
+                />
               </div>
             )
           ) : (
@@ -331,7 +344,13 @@ const CameraCard = ({
 }
 
 // Camera Table Component
-const CameraTable = ({ cameras }: { cameras: any[] }) => {
+const CameraTable = ({
+  cameras,
+  activeTab,
+}: {
+  cameras: any[]
+  activeTab: 'live' | 'ai'
+}) => {
   return (
     <div className='bg-[#111827CC] border border-[#37415180] backdrop-blur-24 rounded-2xl overflow-hidden w-full'>
       <div className='overflow-x-auto w-full'>
@@ -340,6 +359,9 @@ const CameraTable = ({ cameras }: { cameras: any[] }) => {
             <tr>
               <th className='px-6 py-4 text-left text-xs font-bold text-[#9CA3AF] uppercase tracking-wider min-w-fit'>
                 Camera
+              </th>
+              <th className='px-6 py-4 text-left text-xs font-bold text-[#9CA3AF] uppercase tracking-wider min-w-fit'>
+                Live Feed
               </th>
               <th className='px-6 py-4 text-left text-xs font-bold text-[#9CA3AF] uppercase tracking-wider min-w-fit'>
                 Status
@@ -372,7 +394,11 @@ const CameraTable = ({ cameras }: { cameras: any[] }) => {
           </thead>
           <tbody className='divide-y divide-[#374151]'>
             {cameras.map((camera) => (
-              <CameraTableRow key={camera.id} camera={camera} />
+              <CameraTableRow
+                key={camera.id}
+                camera={camera}
+                activeTab={activeTab}
+              />
             ))}
           </tbody>
         </table>
@@ -382,7 +408,16 @@ const CameraTable = ({ cameras }: { cameras: any[] }) => {
 }
 
 // Camera Table Row Component
-const CameraTableRow = ({ camera }: { camera: any }) => {
+const CameraTableRow = ({
+  camera,
+  activeTab,
+}: {
+  camera: any
+  activeTab: 'live' | 'ai'
+}) => {
+  // Get video feed for this camera
+  const videoFeed = getVideoFeedForCamera(camera.id)
+
   // Generate mock data for table fields
   const recordingStatus = camera.isOnline
     ? Math.random() > 0.3
@@ -410,6 +445,31 @@ const CameraTableRow = ({ camera }: { camera: any }) => {
             <div className='text-sm font-bold text-white'>{camera.name}</div>
             <div className='text-xs text-[#9CA3AF]'>ID: {camera.id}</div>
           </div>
+        </div>
+      </td>
+      <td className='px-6 py-4 whitespace-nowrap'>
+        <div className='w-24 h-16'>
+          {camera.isOnline ? (
+            activeTab === 'live' ? (
+              <VideoPlayer
+                videoFeed={videoFeed}
+                isVisible={true}
+                className='w-full h-full'
+                autoPlay={true}
+                muted={true}
+                controls={false}
+                lazyLoad={true}
+              />
+            ) : (
+              <div className='w-full h-full bg-gray-800/40 rounded flex items-center justify-center'>
+                <span className='text-gray-400 text-xs'>AI Mode</span>
+              </div>
+            )
+          ) : (
+            <div className='w-full h-full bg-gray-900/60 rounded flex items-center justify-center'>
+              <CameraOfflineIcon width={16} height={16} fill='#EF4444' />
+            </div>
+          )}
         </div>
       </td>
       <td className='px-6 py-4 whitespace-nowrap'>
