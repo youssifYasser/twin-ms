@@ -1,6 +1,6 @@
 import { PageType } from '@/App'
 import Logo from '@/components/Logo'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import {
   StatisticsIcon,
@@ -35,10 +35,6 @@ const Sidebar = ({
       icon: AlertsMaintenanceIcon,
     },
     { id: 'camera-feed', label: 'Camera Feed', icon: CameraIcon },
-  ] as const
-
-  const adminItems = [
-    { id: 'permissions', label: 'Permissions', icon: 'ri-shield-user-line' },
     {
       id: 'asset-inventory',
       label: 'Asset Inventory',
@@ -46,11 +42,20 @@ const Sidebar = ({
     },
   ] as const
 
-  const isAdminPageActive =
-    currentPage === 'permissions' || currentPage === 'asset-inventory'
+  const adminItems = [
+    { id: 'permissions', label: 'Permissions', icon: 'ri-shield-user-line' },
+  ] as const
+
+  const isAdminPageActive = currentPage === 'permissions'
 
   // Auto-expand admin panel when one of its pages is active
   const shouldExpandAdmin = isAdminExpanded || isAdminPageActive
+
+  useEffect(() => {
+    if (!isOpen || !isAdminPageActive) {
+      setIsAdminExpanded(false)
+    }
+  }, [isOpen, isAdminPageActive])
 
   return (
     <aside
@@ -90,10 +95,23 @@ const Sidebar = ({
                     }}
                     className='w-full flex items-center p-3 text-left rounded-lg transition-all duration-200 group'
                   >
-                    <IconComponent
-                      fill={isActive ? 'rgba(59, 160, 145, 1)' : 'white'}
-                      className='mr-3 h-5 w-5 transition-colors'
-                    />
+                    {typeof IconComponent === 'string' ? (
+                      <i
+                        className={`${
+                          item.icon
+                        } mr-3 text-lg transition-colors ${
+                          isActive
+                            ? 'text-active-page'
+                            : 'text-slate-300 group-hover:text-white'
+                        }`}
+                      />
+                    ) : (
+                      <IconComponent
+                        fill={isActive ? 'rgba(59, 160, 145, 1)' : 'white'}
+                        className='mr-3 h-5 w-5 transition-colors'
+                      />
+                    )}
+
                     <span
                       className={`font-inter text-sm transition-colors ${
                         isActive

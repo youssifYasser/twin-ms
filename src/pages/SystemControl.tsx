@@ -1,12 +1,19 @@
 import { StatisticsCard } from '@/components'
 import { PresetCard, HVACCard, AutomationRuleCard } from '@/components/system'
 import DeviceControlCard from '@/components/system/DeviceControlCard'
-import { LightControlIcon, WindIcon, SecurityIcon, ElevatorIcon } from '@/icons'
+import {
+  LightControlIcon,
+  WindIcon,
+  SecurityIcon,
+  ElevatorIcon,
+  PumpIcon,
+} from '@/icons'
 import { Settings, Zap, Clock, Users, Leaf } from 'lucide-react'
 import { DeviceType } from '@/types'
 import { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { useFilter } from '@/context/FilterContext'
 import { useWebSocket } from '@/context/WebSocketContext'
+import { useRealtimeData } from '@/context/RealtimeDataContext'
 import {
   getFilteredSystemControlStats,
   getFilteredDevices,
@@ -35,6 +42,7 @@ const SystemControl = () => {
 
   const { filterState } = useFilter()
   const { sendDeviceControl } = useWebSocket()
+  const { getModifiedStatistics } = useRealtimeData()
 
   // Debounce timers for value changes
   const debounceTimers = useRef<{ [key: string]: NodeJS.Timeout }>({})
@@ -90,6 +98,9 @@ const SystemControl = () => {
         case 'Elevators':
           asset = 'elevators'
           break
+        case 'Pumps':
+          asset = 'pumps'
+          break
       }
 
       sendDeviceControl(asset, status, value)
@@ -99,11 +110,16 @@ const SystemControl = () => {
 
   // Get filtered data based on current floor/unit selection
   const statisticsData = useMemo(() => {
-    return getFilteredSystemControlStats({
+    const baseStats = getFilteredSystemControlStats({
       selectedFloorId: filterState.selectedFloorId,
       selectedUnitId: filterState.selectedUnitId,
     })
-  }, [filterState.selectedFloorId, filterState.selectedUnitId])
+    return getModifiedStatistics(baseStats)
+  }, [
+    filterState.selectedFloorId,
+    filterState.selectedUnitId,
+    getModifiedStatistics,
+  ])
 
   const allDevices = useMemo(() => {
     return getFilteredDevices({
@@ -182,7 +198,7 @@ const SystemControl = () => {
               const value = isOn ? progress.toString() : '0'
               sendDeviceUpdate(deviceType, status, value)
             } else {
-              // For security and elevators, status only
+              // For security, elevators, and pumps, status only
               sendDeviceUpdate(deviceType, status)
             }
           } else if ('progress' in updates && isOn) {
@@ -228,6 +244,8 @@ const SystemControl = () => {
         return 'Lock Status'
       case 'Elevators':
         return 'Status'
+      case 'Pumps':
+        return 'Status'
       default:
         return 'Power'
     }
@@ -244,6 +262,8 @@ const SystemControl = () => {
         return SecurityIcon
       case 'Elevators':
         return ElevatorIcon
+      case 'Pumps':
+        return PumpIcon
       default:
         return LightControlIcon
     }

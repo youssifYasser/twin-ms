@@ -1,10 +1,10 @@
 import { PageType } from '@/App'
 import Logo from '@/components/Logo'
-import { RefreshIcon } from '@/icons'
+import { RealtimeIcon } from '@/icons'
 import FloorUnitFilter from '@/components/FloorUnitFilter'
 import PageStats from '@/components/PageStats'
 import GlobalSearch from '@/components/GlobalSearch'
-import { useFilter } from '@/context/FilterContext'
+import { useRealtimeData } from '@/context/RealtimeDataContext'
 import { MenuIcon } from 'lucide-react'
 
 interface AppBarProps {
@@ -14,7 +14,7 @@ interface AppBarProps {
 }
 
 const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
-  const { resetFilters } = useFilter()
+  const { isRealtimeEnabled, toggleRealtime } = useRealtimeData()
 
   const getPageTitle = (page: PageType): string => {
     switch (page) {
@@ -69,13 +69,24 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
           {/* WebSocket Connection Status */}
           {/* <WebSocketStatus /> */}
 
-          {/* Refresh Status Button */}
+          {/* Real-time Data Toggle */}
           <button
-            className='flex items-center px-4 py-2 bg-active-page text-white text-sm font-roboto hover:bg-[#278372] transition-colors rounded-lg'
-            onClick={resetFilters}
+            className={`flex items-center px-4 py-2 text-sm font-roboto transition-all duration-200 rounded-lg ${
+              isRealtimeEnabled
+                ? 'bg-green-600 text-white hover:bg-green-700 shadow-lg'
+                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+            }`}
+            onClick={toggleRealtime}
+            title={
+              isRealtimeEnabled
+                ? 'Disable Real-time Simulation'
+                : 'Enable Real-time Simulation'
+            }
           >
-            <RefreshIcon className='mr-2' />
-            <span>Reset Filters</span>
+            <RealtimeIcon
+              className={`mr-2 ${isRealtimeEnabled ? 'animate-pulse' : ''}`}
+            />
+            <span>{isRealtimeEnabled ? 'Live Data' : 'Static Data'}</span>
           </button>
         </div>
       </div>

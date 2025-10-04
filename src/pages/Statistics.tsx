@@ -8,6 +8,7 @@ import {
 } from '@/components/statistics'
 import { useFilter } from '@/context/FilterContext'
 import { useWebSocket } from '@/context/WebSocketContext'
+import { useRealtimeData } from '@/context/RealtimeDataContext'
 import {
   getFilteredStatistics,
   getFilteredOccupancy,
@@ -17,25 +18,35 @@ import { useMemo } from 'react'
 const Statistics = () => {
   const { filterState } = useFilter()
   const { unit501Occupancy } = useWebSocket()
+  const { getModifiedStatistics } = useRealtimeData()
 
   // Get filtered statistics data based on current floor/unit selection
   const statisticsData = useMemo(() => {
-    return getFilteredStatistics({
+    const baseStats = getFilteredStatistics({
       selectedFloorId: filterState.selectedFloorId,
       selectedUnitId: filterState.selectedUnitId,
     })
-  }, [filterState.selectedFloorId, filterState.selectedUnitId])
+    return getModifiedStatistics(baseStats)
+  }, [
+    filterState.selectedFloorId,
+    filterState.selectedUnitId,
+    getModifiedStatistics,
+  ])
 
   // Get occupancy data (refresh when Unit 501 occupancy changes)
   const occupancyData = useMemo(() => {
-    return getFilteredOccupancy({
+    const baseOccupancy = getFilteredOccupancy({
       selectedFloorId: filterState.selectedFloorId,
       selectedUnitId: filterState.selectedUnitId,
     })
+    // Apply real-time modifications to occupancy data too
+    const modifiedData = getModifiedStatistics([baseOccupancy])
+    return modifiedData[0]
   }, [
     filterState.selectedFloorId,
     filterState.selectedUnitId,
     unit501Occupancy,
+    getModifiedStatistics,
   ])
 
   return (
@@ -73,9 +84,6 @@ const Statistics = () => {
         <div className='lg:col-span-3'>
           <ConsumptionTrends />
         </div>
-        <div className='lg:col-span-2'>
-          <AnomaliesAlertsContainer />
-        </div>
         <div className='col-span-2 flex flex-col gap-3'>
           <CostBreakdown />
           <div className='grid grid-cols-1 lg:grid-cols-5 gap-3'>
@@ -86,6 +94,9 @@ const Statistics = () => {
               <LastUpdate />
             </div>
           </div>
+        </div>
+        <div className='lg:col-span-2'>
+          <AnomaliesAlertsContainer />
         </div>
       </div>
     </div>

@@ -25,17 +25,17 @@ const AssetInventory = () => {
   })
 
   const [formData, setFormData] = useState<AddAssetFormData>({
-    name: '',
-    unit: '',
-    floor: '',
-    type: '',
-    provider: '',
-    warrantyExpiry: '',
-    serialNumber: '',
-    installDate: '',
-    cost: '',
+    name: 'Air Conditioning Unit',
+    unit: '501',
+    floor: 5,
+    type: 'HVAC',
+    provider: 'Samsung Electronics',
+    warrantyExpiry: '2026-12-31',
+    serialNumber: 'AC-SAM-2024-001',
+    installDate: '2024-01-15',
+    cost: 15000,
     status: 'Active',
-    notes: '',
+    notes: 'High-efficiency cooling system for executive floor',
   })
 
   // Get unique values for filter dropdowns
@@ -184,17 +184,17 @@ const AssetInventory = () => {
     setAssets([...assets, newAsset])
     setShowAddDialog(false)
     setFormData({
-      name: '',
-      unit: '',
-      floor: '',
-      type: '',
-      provider: '',
-      warrantyExpiry: '',
-      serialNumber: '',
-      installDate: '',
-      cost: '',
+      name: 'Air Conditioning Unit',
+      unit: '501',
+      floor: 5,
+      type: 'HVAC',
+      provider: 'Samsung Electronics',
+      warrantyExpiry: '2026-12-31',
+      serialNumber: 'AC-SAM-2024-001',
+      installDate: '2024-01-15',
+      cost: 15000,
       status: 'Active',
-      notes: '',
+      notes: 'High-efficiency cooling system for executive floor',
     })
   }
 

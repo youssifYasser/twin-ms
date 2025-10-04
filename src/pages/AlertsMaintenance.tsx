@@ -8,6 +8,7 @@ import { Dropdown } from '@/components'
 import { PlusIcon, RefreshIcon } from '@/icons'
 import { useState, useMemo } from 'react'
 import { useFilter } from '@/context/FilterContext'
+import { useRealtimeData } from '@/context/RealtimeDataContext'
 import { getFilteredAlerts, getFilteredAlertStats } from '@/utils/dataFilters'
 import { BUILDING_DATA } from '@/data/buildingData'
 import {
@@ -28,6 +29,7 @@ const AlertsMaintenance = () => {
     LocationMaintenanceTaskType[]
   >(MAINTENANCE_TASKS_DATA)
   const { filterState } = useFilter()
+  const { getModifiedStatistics } = useRealtimeData()
 
   // Action handlers for alert cards
   const handleCreateTask = (alertTitle: string) => {
@@ -340,7 +342,14 @@ const AlertsMaintenance = () => {
       }
     }
 
-    return baseStats
+    // Apply real-time modifications to stats
+    const modifiedStats = getModifiedStatistics(baseStats)
+
+    // AlertStatsCard expects a color property, so add it
+    return modifiedStats.map((stat) => ({
+      ...stat,
+      color: '#1F2937', // Default card background color
+    }))
   }, [
     filterState.selectedFloorId,
     filterState.selectedUnitId,

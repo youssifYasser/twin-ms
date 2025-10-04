@@ -9,6 +9,7 @@ import Permissions from '@/pages/Permissions'
 import AssetInventory from '@/pages/AssetInventory'
 import { FilterProvider } from '@/context/FilterContext'
 import { WebSocketProvider } from '@/context/WebSocketContext'
+import { RealtimeDataProvider } from '@/context/RealtimeDataContext'
 
 export type PageType =
   | 'statistics'
@@ -45,11 +46,13 @@ function App() {
 
   return (
     <WebSocketProvider>
-      <FilterProvider>
-        <Layout currentPage={currentPage} onPageChange={setCurrentPage}>
-          {renderPage()}
-        </Layout>
-      </FilterProvider>
+      <RealtimeDataProvider>
+        <FilterProvider>
+          <Layout currentPage={currentPage} onPageChange={setCurrentPage}>
+            {renderPage()}
+          </Layout>
+        </FilterProvider>
+      </RealtimeDataProvider>
     </WebSocketProvider>
   )
 }

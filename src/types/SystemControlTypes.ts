@@ -4,7 +4,12 @@ export type PresetType = {
   description: string
 }
 
-export type DeviceType = 'Lighting' | 'HVAC' | 'Security' | 'Elevators'
+export type DeviceType =
+  | 'Lighting'
+  | 'HVAC'
+  | 'Security'
+  | 'Elevators'
+  | 'Pumps'
 
 export type DeviceControlItemType = {
   id: string

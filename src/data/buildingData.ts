@@ -18,7 +18,6 @@ export interface UnitData {
 
 // Floor definitions - modify floor names here to affect entire application
 export const FLOOR_DEFINITIONS = [
-  { id: 'basement', name: 'Basement', displayName: 'Basement' },
   { id: 'floor_1', name: 'Floor 1', displayName: 'Floor 1' },
   { id: 'floor_2', name: 'Floor 2', displayName: 'Floor 2' },
   { id: 'floor_3', name: 'Floor 3', displayName: 'Floor 3' },
@@ -31,26 +30,13 @@ export const FLOOR_DEFINITIONS = [
   { id: 'floor_10', name: 'Floor 10', displayName: 'Floor 10' },
   { id: 'floor_11', name: 'Floor 11', displayName: 'Floor 11' },
   { id: 'floor_12', name: 'Floor 12', displayName: 'Floor 12' },
-  { id: 'roof', name: 'Roof', displayName: 'Roof' },
 ]
 
-// Generate units for each floor (5 units per floor)
+// Generate units for each floor (5 units per floor + pumps room)
 const generateUnitsForFloor = (
   floorId: string,
   floorNumber?: number
 ): UnitData[] => {
-  // Special cases for floors without numbered units
-  if (floorId === 'basement' || floorId === 'roof') {
-    return [
-      {
-        id: `${floorId}_all`,
-        number: 'All Units',
-        floorId,
-        displayName: 'All Units',
-      },
-    ]
-  }
-
   // Generate numbered units for regular floors
   if (floorNumber) {
     const units: UnitData[] = [
@@ -59,6 +45,13 @@ const generateUnitsForFloor = (
         number: 'All Units',
         floorId,
         displayName: 'All Units',
+      },
+      // Add Pumps Room after "All Units" and before first unit
+      {
+        id: `${floorId}_pumps_room`,
+        number: 'Pumps Room',
+        floorId,
+        displayName: 'Pumps Room',
       },
     ]
 

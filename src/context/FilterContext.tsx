@@ -62,11 +62,7 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
 
     // Handle floor ID conversion for WebSocket
     if (filterState.selectedFloorId !== 'all') {
-      if (filterState.selectedFloorId === 'basement') {
-        floorValue = 'basement'
-      } else if (filterState.selectedFloorId === 'roof') {
-        floorValue = 'roof'
-      } else if (filterState.selectedFloorId?.startsWith('floor_')) {
+      if (filterState.selectedFloorId?.startsWith('floor_')) {
         // Extract number from floor_X format
         floorValue = filterState.selectedFloorId.replace('floor_', '')
       }
@@ -74,15 +70,8 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
 
     // Handle unit ID conversion for WebSocket
     if (filterState.selectedUnitId !== 'all') {
-      if (
-        filterState.selectedFloorId === 'basement' ||
-        filterState.selectedFloorId === 'roof'
-      ) {
-        unitValue = 'all' // basement and roof only have "all" units
-      } else {
-        // Extract unit number from regular floors
-        unitValue = filterState.selectedUnit.replace('Unit ', '') || 'all'
-      }
+      // Extract unit number from regular floors
+      unitValue = filterState.selectedUnit.replace('Unit ', '') || 'all'
     }
 
     console.log(
@@ -123,22 +112,12 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
       // Convert incoming values to proper display format for UI update
       let floorDisplayName = 'All Floors'
       if (floor !== 'all') {
-        if (floor === 'basement') {
-          floorDisplayName = 'Basement'
-        } else if (floor === 'roof') {
-          floorDisplayName = 'Roof'
-        } else {
-          floorDisplayName = `Floor ${floor}`
-        }
+        floorDisplayName = `Floor ${floor}`
       }
 
       let unitDisplayName = 'All Units'
       if (unit !== 'all' && floor !== 'all') {
-        if (floor === 'basement' || floor === 'roof') {
-          unitDisplayName = 'All Units'
-        } else {
-          unitDisplayName = `Unit ${unit}` // Use the actual unit number from the message
-        }
+        unitDisplayName = `Unit ${unit}` // Use the actual unit number from the message
       }
 
       console.log(

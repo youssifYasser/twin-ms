@@ -53,118 +53,61 @@ const createDevice = (
 
 // Generate lighting devices (per unit)
 BUILDING_DATA.forEach((floor) => {
-  if (floor.id === 'basement') {
-    DEVICES_DATA.push(
-      createDevice(
-        `lighting_${floor.id}_parking`,
-        'Parking Garage Lights',
-        'Lighting',
-        floor.id,
-        undefined,
-        30,
-        true,
-        '80W'
-      )
-    )
-  } else if (floor.id === 'roof') {
-    DEVICES_DATA.push(
-      createDevice(
-        `lighting_${floor.id}_main`,
-        'Roof Access Lights',
-        'Lighting',
-        floor.id,
-        undefined,
-        60,
-        true,
-        '40W'
-      )
-    )
-  } else {
-    // Regular floors - lighting per unit
-    floor.units.forEach((unit) => {
-      if (!unit.id.includes('_all')) {
-        const unitNumber = unit.number
-        DEVICES_DATA.push(
-          createDevice(
-            `lighting_${unit.id}`,
-            `Unit ${unitNumber} Lights`,
-            'Lighting',
-            floor.id,
-            unit.id,
-            Math.floor(Math.random() * 100),
-            Math.random() > 0.3,
-            '24W'
-          )
+  // Regular floors - lighting per unit
+  floor.units.forEach((unit) => {
+    if (!unit.id.includes('_all') && !unit.id.includes('_pumps_room')) {
+      const unitNumber = unit.number
+      DEVICES_DATA.push(
+        createDevice(
+          `lighting_${unit.id}`,
+          `Unit ${unitNumber} Lights`,
+          'Lighting',
+          floor.id,
+          unit.id,
+          Math.floor(Math.random() * 100),
+          Math.random() > 0.3,
+          '24W'
         )
-      }
-    })
-  }
+      )
+    }
+  })
 })
 
 // Generate HVAC devices (per floor - serves all units on that floor)
 BUILDING_DATA.forEach((floor) => {
-  if (floor.id !== 'roof') {
-    // No HVAC on roof
-    DEVICES_DATA.push(
-      createDevice(
-        `hvac_${floor.id}`,
-        `${floor.displayName} HVAC System`,
-        'HVAC',
-        floor.id,
-        `${floor.id}_all`,
-        Math.floor(Math.random() * 16 + 15), // Generate temperature between 15-30°C
-        Math.random() > 0.2,
-        floor.id === 'basement' ? '1500W' : '2400W'
-      )
+  DEVICES_DATA.push(
+    createDevice(
+      `hvac_${floor.id}`,
+      `${floor.displayName} HVAC System`,
+      'HVAC',
+      floor.id,
+      `${floor.id}_all`,
+      Math.floor(Math.random() * 16 + 15), // Generate temperature between 15-30°C
+      Math.random() > 0.2,
+      '2400W'
     )
-  }
+  )
 })
 
 // Generate security devices (per unit)
 BUILDING_DATA.forEach((floor) => {
-  if (floor.id === 'basement') {
-    DEVICES_DATA.push(
-      createDevice(
-        `security_${floor.id}_main`,
-        'Parking Security System',
-        'Security',
-        floor.id,
-        undefined,
-        100,
-        true
-      )
-    )
-  } else if (floor.id === 'roof') {
-    DEVICES_DATA.push(
-      createDevice(
-        `security_${floor.id}_access`,
-        'Roof Access Control',
-        'Security',
-        floor.id,
-        undefined,
-        100,
-        true
-      )
-    )
-  } else {
-    // Regular floors - security per unit
-    floor.units.forEach((unit) => {
-      if (!unit.id.includes('_all')) {
-        const unitNumber = unit.number
-        DEVICES_DATA.push(
-          createDevice(
-            `security_${unit.id}`,
-            `Unit ${unitNumber} Door Lock`,
-            'Security',
-            floor.id,
-            unit.id,
-            Math.random() > 0.3 ? 100 : 0,
-            Math.random() > 0.3
-          )
+  // Regular floors - security per unit
+  floor.units.forEach((unit) => {
+    if (!unit.id.includes('_all') && !unit.id.includes('_pumps_room')) {
+      const unitNumber = unit.number
+      DEVICES_DATA.push(
+        createDevice(
+          `security_${unit.id}`,
+          `Unit ${unitNumber} Door Lock`,
+          'Security',
+          floor.id,
+          unit.id,
+          Math.random() > 0.3 ? 100 : 0,
+          Math.random() > 0.3
         )
-      }
-    })
-  }
+      )
+    }
+  })
 })
 
 // Generate elevators (serve all floors but have current position)
@@ -195,6 +138,30 @@ elevators.forEach((elevator) => {
       elevator.currentFloor
     )
   )
+})
+
+// Generate pumps (2 per floor, located in Pumps Room)
+BUILDING_DATA.forEach((floor) => {
+  const pumpsRoomUnit = floor.units.find((unit) =>
+    unit.id.includes('_pumps_room')
+  )
+  if (pumpsRoomUnit) {
+    // Add 2 pumps per floor
+    for (let i = 1; i <= 2; i++) {
+      DEVICES_DATA.push(
+        createDevice(
+          `pump_${floor.id}_${i}`,
+          `${floor.displayName} Pump ${i}`,
+          'Pumps',
+          floor.id,
+          pumpsRoomUnit.id,
+          100, // On/off device, so 100 when on, 0 when off
+          Math.random() > 0.3, // Random initial state
+          '800W' // Typical pump power consumption
+        )
+      )
+    }
+  }
 })
 
 // Filter devices based on floor/unit selection
@@ -247,6 +214,7 @@ export const PRESET_CONFIGURATIONS: { [presetId: number]: PresetDataType } = {
     HVAC: {},
     Security: {},
     Elevators: {},
+    Pumps: {},
   },
   2: {
     // Lunch Break - Reduced activity
@@ -254,6 +222,7 @@ export const PRESET_CONFIGURATIONS: { [presetId: number]: PresetDataType } = {
     HVAC: {},
     Security: {},
     Elevators: {},
+    Pumps: {},
   },
   3: {
     // Evening Mode - Security focus
@@ -261,6 +230,7 @@ export const PRESET_CONFIGURATIONS: { [presetId: number]: PresetDataType } = {
     HVAC: {},
     Security: {},
     Elevators: {},
+    Pumps: {},
   },
   4: {
     // Weekend Mode - Minimal operation
@@ -268,42 +238,52 @@ export const PRESET_CONFIGURATIONS: { [presetId: number]: PresetDataType } = {
     HVAC: {},
     Security: {},
     Elevators: {},
+    Pumps: {},
   },
 }
 
 // Populate preset configurations based on device data
 DEVICES_DATA.forEach((device) => {
   // Morning Setup
+  const morningPumpSecurityState = Math.random() > 0.7
   PRESET_CONFIGURATIONS[1][device.deviceType][device.id] = {
     progress:
       device.deviceType === 'Lighting'
         ? Math.floor(Math.random() * 30 + 70)
         : device.deviceType === 'HVAC'
         ? Math.floor(Math.random() * 6 + 20) // Temperature between 20-25°C
-        : device.deviceType === 'Security'
-        ? Math.random() > 0.7
+        : device.deviceType === 'Security' || device.deviceType === 'Pumps'
+        ? morningPumpSecurityState
           ? 100
           : 0
         : 100, // Elevators
-    isOn: device.deviceType !== 'Security' ? true : Math.random() > 0.7,
+    isOn:
+      device.deviceType !== 'Security' && device.deviceType !== 'Pumps'
+        ? true
+        : morningPumpSecurityState,
   }
 
   // Lunch Break
+  const lunchPumpSecurityState = Math.random() > 0.7
   PRESET_CONFIGURATIONS[2][device.deviceType][device.id] = {
     progress:
       device.deviceType === 'Lighting'
         ? Math.floor(Math.random() * 20 + 50)
         : device.deviceType === 'HVAC'
         ? Math.floor(Math.random() * 4 + 19) // Temperature between 19-22°C
-        : device.deviceType === 'Security'
-        ? Math.random() > 0.7
+        : device.deviceType === 'Security' || device.deviceType === 'Pumps'
+        ? lunchPumpSecurityState
           ? 100
           : 0
         : 100, // Elevators
-    isOn: device.deviceType !== 'Security' ? true : Math.random() > 0.7,
+    isOn:
+      device.deviceType !== 'Security' && device.deviceType !== 'Pumps'
+        ? true
+        : lunchPumpSecurityState,
   }
 
   // Evening Mode
+  const eveningPumpState = Math.random() > 0.5
   PRESET_CONFIGURATIONS[3][device.deviceType][device.id] = {
     progress:
       device.deviceType === 'Lighting'
@@ -314,6 +294,10 @@ DEVICES_DATA.forEach((device) => {
         ? Math.floor(Math.random() * 4 + 16) // Temperature between 16-19°C
         : device.deviceType === 'Security'
         ? 100
+        : device.deviceType === 'Pumps'
+        ? eveningPumpState
+          ? 100
+          : 0
         : device.id === 'elevator_emergency'
         ? 100
         : 0, // Only emergency elevator
@@ -324,6 +308,8 @@ DEVICES_DATA.forEach((device) => {
         ? true
         : device.deviceType === 'Security'
         ? true
+        : device.deviceType === 'Pumps'
+        ? eveningPumpState
         : device.id === 'elevator_emergency', // Only emergency elevator
   }
 
@@ -340,6 +326,8 @@ DEVICES_DATA.forEach((device) => {
           : 0
         : device.deviceType === 'Security'
         ? 100
+        : device.deviceType === 'Pumps'
+        ? 0 // Pumps off on weekends
         : 0, // All elevators off
     isOn:
       device.deviceType === 'Lighting'
@@ -348,6 +336,8 @@ DEVICES_DATA.forEach((device) => {
         ? device.floorId === 'basement'
         : device.deviceType === 'Security'
         ? true
+        : device.deviceType === 'Pumps'
+        ? false // Pumps off on weekends
         : false, // All elevators off
   }
 })
@@ -399,6 +389,10 @@ export const getDeviceControlCounts = (
     {
       name: 'Elevators' as DeviceType,
       count: devices.filter((d) => d.deviceType === 'Elevators').length,
+    },
+    {
+      name: 'Pumps' as DeviceType,
+      count: devices.filter((d) => d.deviceType === 'Pumps').length,
     },
   ]
 }

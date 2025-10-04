@@ -84,116 +84,82 @@ BUILDING_DATA.forEach((floor) => {
 
 // Generate data for each floor and their units
 BUILDING_DATA.forEach((floor) => {
-  if (floor.id === 'basement' || floor.id === 'roof') {
-    // Special floors - only floor-level data
-    STATISTICS_DATA.push(
-      createStatisticsEntry(
-        'water',
-        Math.floor(Math.random() * 50 + 20),
-        1.3,
-        'm³',
-        floor.id
-      ),
-      createStatisticsEntry(
-        'power factor',
-        parseFloat((Math.random() * 0.2 + 0.8).toFixed(2)),
-        3.4,
-        '',
-        floor.id
-      ),
-      createStatisticsEntry(
-        'demand',
-        parseFloat((Math.random() * 30 + 20).toFixed(1)),
-        2.0,
-        'kW',
-        floor.id
-      ),
-      createStatisticsEntry(
-        'water price',
-        parseFloat((Math.random() * 10 + 20).toFixed(1)),
-        2.5,
-        'SAR',
-        floor.id
+  // Regular floors - both floor and unit level data
+  floor.units.forEach((unit) => {
+    if (unit.id.includes('_all')) {
+      // Floor-level aggregated data
+      STATISTICS_DATA.push(
+        createStatisticsEntry(
+          'water',
+          Math.floor(Math.random() * 200 + 100),
+          1.3,
+          'm³',
+          floor.id,
+          unit.id
+        ),
+        createStatisticsEntry(
+          'power factor',
+          parseFloat((Math.random() * 0.2 + 0.8).toFixed(2)),
+          3.4,
+          '',
+          floor.id,
+          unit.id
+        ),
+        createStatisticsEntry(
+          'demand',
+          parseFloat((Math.random() * 100 + 80).toFixed(1)),
+          2.0,
+          'kW',
+          floor.id,
+          unit.id
+        ),
+        createStatisticsEntry(
+          'water price',
+          parseFloat((Math.random() * 20 + 40).toFixed(1)),
+          2.5,
+          'SAR',
+          floor.id,
+          unit.id
+        )
       )
-    )
-  } else {
-    // Regular floors - both floor and unit level data
-    floor.units.forEach((unit) => {
-      if (unit.id.includes('_all')) {
-        // Floor-level aggregated data
-        STATISTICS_DATA.push(
-          createStatisticsEntry(
-            'water',
-            Math.floor(Math.random() * 200 + 100),
-            1.3,
-            'm³',
-            floor.id,
-            unit.id
-          ),
-          createStatisticsEntry(
-            'power factor',
-            parseFloat((Math.random() * 0.2 + 0.8).toFixed(2)),
-            3.4,
-            '',
-            floor.id,
-            unit.id
-          ),
-          createStatisticsEntry(
-            'demand',
-            parseFloat((Math.random() * 100 + 80).toFixed(1)),
-            2.0,
-            'kW',
-            floor.id,
-            unit.id
-          ),
-          createStatisticsEntry(
-            'water price',
-            parseFloat((Math.random() * 20 + 40).toFixed(1)),
-            2.5,
-            'SAR',
-            floor.id,
-            unit.id
-          )
+    } else if (!unit.id.includes('_pumps_room')) {
+      // Individual unit data (excluding pumps room)
+      STATISTICS_DATA.push(
+        createStatisticsEntry(
+          'water',
+          Math.floor(Math.random() * 40 + 15),
+          1.3,
+          'm³',
+          floor.id,
+          unit.id
+        ),
+        createStatisticsEntry(
+          'power factor',
+          parseFloat((Math.random() * 0.2 + 0.8).toFixed(2)),
+          3.4,
+          '',
+          floor.id,
+          unit.id
+        ),
+        createStatisticsEntry(
+          'demand',
+          parseFloat((Math.random() * 20 + 10).toFixed(1)),
+          2.0,
+          'kW',
+          floor.id,
+          unit.id
+        ),
+        createStatisticsEntry(
+          'water price',
+          parseFloat((Math.random() * 8 + 6).toFixed(1)),
+          2.5,
+          'SAR',
+          floor.id,
+          unit.id
         )
-      } else {
-        // Individual unit data
-        STATISTICS_DATA.push(
-          createStatisticsEntry(
-            'water',
-            Math.floor(Math.random() * 40 + 15),
-            1.3,
-            'm³',
-            floor.id,
-            unit.id
-          ),
-          createStatisticsEntry(
-            'power factor',
-            parseFloat((Math.random() * 0.2 + 0.8).toFixed(2)),
-            3.4,
-            '',
-            floor.id,
-            unit.id
-          ),
-          createStatisticsEntry(
-            'demand',
-            parseFloat((Math.random() * 20 + 10).toFixed(1)),
-            2.0,
-            'kW',
-            floor.id,
-            unit.id
-          ),
-          createStatisticsEntry(
-            'water price',
-            parseFloat((Math.random() * 8 + 6).toFixed(1)),
-            2.5,
-            'SAR',
-            floor.id,
-            unit.id
-          )
-        )
-      }
-    })
-  }
+      )
+    }
+  })
 })
 
 // Generate consumption chart data for each floor and unit
@@ -348,25 +314,20 @@ const generateConsumptionData = (
 
 // Generate consumption data for each floor and unit
 BUILDING_DATA.forEach((floor) => {
-  if (floor.id === 'basement' || floor.id === 'roof') {
-    // Special floors - lower consumption
-    CONSUMPTION_CHART_DATA.push(generateConsumptionData(150, 50, floor.id))
-  } else {
-    // Regular floors
-    floor.units.forEach((unit) => {
-      if (unit.id.includes('_all')) {
-        // Floor-level aggregated data
-        CONSUMPTION_CHART_DATA.push(
-          generateConsumptionData(800, 200, floor.id, unit.id)
-        )
-      } else {
-        // Individual unit data
-        CONSUMPTION_CHART_DATA.push(
-          generateConsumptionData(160, 40, floor.id, unit.id)
-        )
-      }
-    })
-  }
+  // Regular floors
+  floor.units.forEach((unit) => {
+    if (unit.id.includes('_all')) {
+      // Floor-level aggregated data
+      CONSUMPTION_CHART_DATA.push(
+        generateConsumptionData(800, 200, floor.id, unit.id)
+      )
+    } else if (!unit.id.includes('_pumps_room')) {
+      // Individual unit data (excluding pumps room)
+      CONSUMPTION_CHART_DATA.push(
+        generateConsumptionData(160, 40, floor.id, unit.id)
+      )
+    }
+  })
 })
 
 // Helper functions for filtering statistics data
@@ -530,7 +491,7 @@ export const getSystemControlStatistics = (
 
   const baseStats = [
     { title: 'Devices Online', base: 210, total: 231, unit: '' },
-    { title: 'HVAC Systems', base: 22, total: 25, unit: '°C' },
+    { title: 'Temperature', base: 22, total: 25, unit: '°C' },
     { title: 'Lights Active', base: 156, total: 200, unit: '' },
     { title: 'Doors Secured', base: 42, total: 50, unit: '' },
   ]
@@ -540,7 +501,7 @@ export const getSystemControlStatistics = (
     return baseStats.map((stat, index) => ({
       title: stat.title,
       value:
-        stat.title === 'HVAC Systems'
+        stat.title === 'Temperature'
           ? `${stat.base}${stat.unit}`
           : `${stat.base}/${stat.total}`,
       percentageChange: [1.3, 3.4, 2.0, 3.0][index],
@@ -558,7 +519,7 @@ export const getSystemControlStatistics = (
     return {
       title: stat.title,
       value:
-        stat.title === 'HVAC Systems'
+        stat.title === 'Temperature'
           ? `${adjustedBase}${stat.unit}`
           : `${adjustedBase}/${adjustedTotal}`,
       percentageChange: [1.3, 3.4, 2.0, 3.0][index],

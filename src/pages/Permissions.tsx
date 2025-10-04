@@ -26,9 +26,9 @@ const Permissions = () => {
   const [users, setUsers] = useState<User[]>([
     {
       id: '1',
-      firstName: 'Sarah',
-      lastName: 'Johnson',
-      email: 'sarah.johnson@company.com',
+      firstName: 'Fatima',
+      lastName: 'Al-Rashid',
+      email: 'fatima.alrashid@company.com',
       role: 'Building Manager',
       department: 'Facilities',
       permissions: ['Full Access', 'User Management'],
@@ -37,9 +37,9 @@ const Permissions = () => {
     },
     {
       id: '2',
-      firstName: 'Mike',
-      lastName: 'Chen',
-      email: 'mike.chen@company.com',
+      firstName: 'Ahmed',
+      lastName: 'Al-Mansouri',
+      email: 'ahmed.almansouri@company.com',
       role: 'Security Chief',
       department: 'Security',
       permissions: ['Camera Access', 'Security Control'],
@@ -48,34 +48,34 @@ const Permissions = () => {
     },
     {
       id: '3',
-      firstName: 'David',
-      lastName: 'Rodriguez',
-      email: 'david.rodriguez@company.com',
-      role: 'Maintenance Lead',
-      department: 'Maintenance',
-      permissions: ['Device Control', 'Maintenance Reports'],
+      firstName: 'Youssef',
+      lastName: 'Yasser',
+      email: 'youssef.yasser@company.com',
+      role: 'IT Administrator',
+      department: 'IT',
+      permissions: ['System Control', 'Network Management'],
       status: 'Active',
       lastLogin: '2024-01-14 16:20',
     },
     {
       id: '4',
-      firstName: 'Emily',
-      lastName: 'Watson',
-      email: 'emily.watson@company.com',
-      role: 'IT Administrator',
-      department: 'IT',
-      permissions: ['System Control', 'Network Management'],
+      firstName: 'Aisha',
+      lastName: 'Al-Zahra',
+      email: 'aisha.alzahra@company.com',
+      role: 'Maintenance Lead',
+      department: 'Facilities',
+      permissions: ['Room Booking', 'Basic Reports'],
       status: 'Active',
       lastLogin: '2024-01-15 10:15',
     },
     {
-      id: '5',
-      firstName: 'James',
-      lastName: 'Wilson',
-      email: 'james.wilson@company.com',
+      id: '4',
+      firstName: 'Omar',
+      lastName: 'Hassan',
+      email: 'omar.hassan@company.com',
       role: 'Facility Coordinator',
-      department: 'Facilities',
-      permissions: ['Room Booking', 'Basic Reports'],
+      department: 'Maintenance',
+      permissions: ['Device Control', 'Maintenance Reports'],
       status: 'Inactive',
       lastLogin: '2024-01-10 14:30',
     },
@@ -83,12 +83,12 @@ const Permissions = () => {
 
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false)
   const [formData, setFormData] = useState<AddUserFormData>({
-    firstName: '',
-    lastName: '',
-    email: '',
+    firstName: 'Mohammad',
+    lastName: 'Mustafa',
+    email: 'mohammad.mustafa@company.com',
     role: 'Building Manager',
     department: 'Facilities',
-    permissions: [],
+    permissions: ['Reports'],
   })
 
   const availablePermissions = [
@@ -138,12 +138,12 @@ const Permissions = () => {
     setUsers((prev) => [...prev, newUser])
     setIsAddUserDialogOpen(false)
     setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
+      firstName: 'Mohammad',
+      lastName: 'Al-Saud',
+      email: 'mohammad.alsaud@company.com',
       role: 'Building Manager',
       department: 'Facilities',
-      permissions: [],
+      permissions: ['Reports'],
     })
   }
 

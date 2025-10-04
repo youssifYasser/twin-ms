@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+
 interface LinearProgressProps {
   progress: number // Progress percentage (0 to 100)
   title: string
@@ -11,6 +13,17 @@ export default function LinearProgress({
   value,
   color,
 }: LinearProgressProps) {
+  const [animatedProgress, setAnimatedProgress] = useState(0)
+
+  useEffect(() => {
+    // Start animation after a small delay to ensure component is mounted
+    const timer = setTimeout(() => {
+      setAnimatedProgress(progress)
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [progress])
+
   return (
     <div className='w-full'>
       {/* Title and Value Row */}
@@ -28,9 +41,9 @@ export default function LinearProgress({
         >
           {/* Progress Bar Fill */}
           <div
-            className='h-full rounded-full transition-all duration-300 ease-in-out'
+            className='h-full rounded-full transition-all duration-1000 ease-out'
             style={{
-              width: `${progress}%`,
+              width: `${animatedProgress}%`,
               backgroundColor: color,
             }}
           />
@@ -38,13 +51,13 @@ export default function LinearProgress({
 
         {/* Progress Percentage */}
         <span
-          className='font-normal'
+          className='font-normal transition-all duration-1000 ease-out'
           style={{
             fontSize: '12px',
             color: '#9CA3AF',
           }}
         >
-          {progress}%
+          {Math.round(animatedProgress)}%
         </span>
       </div>
     </div>
