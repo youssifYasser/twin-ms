@@ -239,72 +239,101 @@ const CameraCard = ({
 
   return (
     <div className='bg-[#111827CC] border border-[#37415180] backdrop-blur-24 rounded-2xl overflow-hidden'>
-      <div
-        className='flex flex-col gap-2'
-        style={{
-          background:
-            'linear-gradient(135deg, #1F2937 0%, #374151 50%, #111827 100%)',
-        }}
-      >
-        <div className='flex items-center justify-between p-4'>
-          <div className='flex items-center space-x-2'>
-            <div
-              className={`w-2 h-2 rounded-full ${
-                camera.isOnline ? 'bg-[#EF4444]' : 'bg-gray-500'
-              }`}
-            ></div>
-            <span className='text-xs text-white font-bold'>
-              {camera.isOnline ? 'LIVE' : 'OFFLINE'}
-            </span>
-          </div>
-          <span className='rounded-[4px] px-2 py-1 flex items-center justify-center bg-black/60 font-bold text-xs text-white'>
-            {camera.quality.resolution} • {camera.quality.fps}fps
-          </span>
-        </div>
-        <div>
-          {camera.isOnline ? (
-            activeTab === 'ai' ? (
-              // AI Detection mode - show detection boxes
-              <div className='flex flex-wrap gap-1 px-4'>
-                {camera.aiDetections.map((detection: any, index: number) => (
-                  <AIDetectionComponent
-                    key={index}
-                    color={detection.color}
-                    label={`${detection.label} ${detection.count}`}
-                  />
-                ))}
-                {camera.aiDetections.length === 0 && (
-                  <div className='h-20 w-full flex items-center justify-center bg-gray-800/40 rounded'>
-                    <span className='text-gray-400 text-xs'>No detections</span>
-                  </div>
-                )}
+      {camera.isOnline ? (
+        activeTab === 'ai' ? (
+          // AI Detection mode - show detection boxes with header
+          <div
+            className='flex flex-col gap-2'
+            style={{
+              background:
+                'linear-gradient(135deg, #1F2937 0%, #374151 50%, #111827 100%)',
+            }}
+          >
+            <div className='flex items-center justify-between p-4'>
+              <div className='flex items-center space-x-2'>
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    camera.isOnline ? 'bg-[#EF4444]' : 'bg-gray-500'
+                  }`}
+                ></div>
+                <span className='text-xs text-white font-bold'>
+                  AI DETECTION
+                </span>
               </div>
-            ) : (
-              // Live feed mode - show video player
-              <div className='mx-4'>
-                <VideoPlayer
-                  videoFeed={videoFeed}
-                  isVisible={activeTab === 'live'}
-                  className='h-32 w-full'
-                  autoPlay={true}
-                  muted={true}
-                  controls={false}
-                  lazyLoad={true}
-                  enableVideo={enableVideos}
-                />
-              </div>
-            )
-          ) : (
-            // Camera offline - show offline icon
-            <div className='h-20 mx-4 bg-gray-900/60 rounded flex flex-col items-center justify-center gap-1'>
-              <CameraOfflineIcon width={24} height={24} fill='#EF4444' />
-              <span className='text-red-400 text-xs font-bold'>
-                Camera Offline
+              <span className='rounded-[4px] px-2 py-1 flex items-center justify-center bg-black/60 font-bold text-xs text-white'>
+                {camera.quality.resolution} • {camera.quality.fps}fps
               </span>
             </div>
-          )}
+            <div className='flex flex-wrap gap-1 px-4'>
+              {camera.aiDetections.map((detection: any, index: number) => (
+                <AIDetectionComponent
+                  key={index}
+                  color={detection.color}
+                  label={`${detection.label} ${detection.count}`}
+                />
+              ))}
+              {camera.aiDetections.length === 0 && (
+                <div className='h-20 w-full flex items-center justify-center bg-gray-800/40 rounded'>
+                  <span className='text-gray-400 text-xs'>No detections</span>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          // Live feed mode - show video player with full-screen overlay
+          <div className='relative h-48'>
+            <VideoPlayer
+              videoFeed={videoFeed}
+              isVisible={activeTab === 'live'}
+              className='h-full w-full'
+              autoPlay={true}
+              muted={true}
+              controls={false}
+              lazyLoad={true}
+              enableVideo={enableVideos}
+            />
+            {/* Overlay for Live mode only */}
+            <div className='absolute top-0 left-0 right-0 flex items-center justify-end p-4 z-10'>
+              {/* <div className='flex items-center space-x-2'>
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    camera.isOnline ? 'bg-[#EF4444]' : 'bg-gray-500'
+                  }`}
+                ></div>
+                <span className='text-xs text-white font-bold'>LIVE</span>
+              </div> */}
+              <span className='rounded-[4px] px-2 py-1 flex items-center justify-center bg-black/60 font-bold text-xs text-white'>
+                {camera.quality.resolution} • {camera.quality.fps}fps
+              </span>
+            </div>
+          </div>
+        )
+      ) : (
+        // Camera offline - show offline icon with header
+        <div
+          className='flex flex-col gap-2'
+          style={{
+            background:
+              'linear-gradient(135deg, #1F2937 0%, #374151 50%, #111827 100%)',
+          }}
+        >
+          <div className='flex items-center justify-between p-4'>
+            <div className='flex items-center space-x-2'>
+              <div className='w-2 h-2 rounded-full bg-gray-500'></div>
+              <span className='text-xs text-white font-bold'>OFFLINE</span>
+            </div>
+            <span className='rounded-[4px] px-2 py-1 flex items-center justify-center bg-black/60 font-bold text-xs text-white'>
+              {camera.quality.resolution} • {camera.quality.fps}fps
+            </span>
+          </div>
+          <div className='h-20 mx-4 bg-gray-900/60 rounded flex flex-col items-center justify-center gap-1'>
+            <CameraOfflineIcon width={24} height={24} fill='#EF4444' />
+            <span className='text-red-400 text-xs font-bold'>
+              Camera Offline
+            </span>
+          </div>
         </div>
-      </div>
+      )}
 
       <div className='p-4 flex flex-col items-start gap-2'>
         <div className='flex items-center justify-between w-full'>

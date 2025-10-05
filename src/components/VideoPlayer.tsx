@@ -28,26 +28,9 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const [hasError, setHasError] = useState(false)
   const [shouldLoad, setShouldLoad] = useState(!lazyLoad) // Load immediately if lazy loading is disabled
 
-  // If videos are disabled, show placeholder state
-  if (!enableVideo) {
-    return (
-      <div
-        ref={containerRef}
-        className={`relative rounded overflow-hidden ${className}`}
-      >
-        <div className='absolute inset-0 bg-gray-900/60 rounded flex flex-col items-center justify-center gap-2 z-10'>
-          <div className='w-6 h-6 border border-gray-500 rounded-sm flex items-center justify-center'>
-            <div className='w-3 h-3 border-l-2 border-gray-400'></div>
-          </div>
-          <span className='text-gray-400 text-xs'>Camera ready</span>
-        </div>
-      </div>
-    )
-  }
-
   // Intersection Observer for lazy loading
   useEffect(() => {
-    if (!lazyLoad || shouldLoad) return
+    if (!lazyLoad || shouldLoad || !enableVideo) return
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -69,7 +52,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     }
 
     return () => observer.disconnect()
-  }, [lazyLoad, shouldLoad])
+  }, [lazyLoad, shouldLoad, enableVideo])
 
   const handleLoadStart = useCallback(() => setIsLoading(true), [])
   const handleCanPlay = useCallback(() => setIsLoading(false), [])
@@ -80,7 +63,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   useEffect(() => {
     const video = videoRef.current
-    if (!video || !shouldLoad) return
+    if (!video || !shouldLoad || !enableVideo) return
 
     video.addEventListener('loadstart', handleLoadStart)
     video.addEventListener('canplay', handleCanPlay)
@@ -94,12 +77,19 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       video.removeEventListener('canplay', handleCanPlay)
       video.removeEventListener('error', handleError)
     }
-  }, [shouldLoad, videoFeed.url, handleLoadStart, handleCanPlay, handleError])
+  }, [
+    shouldLoad,
+    videoFeed.url,
+    handleLoadStart,
+    handleCanPlay,
+    handleError,
+    enableVideo,
+  ])
 
   // Handle play/pause based on visibility
   useEffect(() => {
     const video = videoRef.current
-    if (!video || !shouldLoad) return
+    if (!video || !shouldLoad || !enableVideo) return
 
     if (isVisible && autoPlay && !hasError) {
       video.play().catch(() => {
@@ -109,7 +99,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
     } else {
       video.pause()
     }
-  }, [isVisible, autoPlay, hasError, shouldLoad])
+  }, [isVisible, autoPlay, hasError, shouldLoad, enableVideo])
 
   if (hasError) {
     return (
@@ -119,6 +109,23 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
       >
         <div className='text-red-400 text-xs'>📹</div>
         <span className='text-red-400 text-xs font-bold'>Feed Error</span>
+      </div>
+    )
+  }
+
+  // If videos are disabled, show placeholder state
+  if (!enableVideo) {
+    return (
+      <div
+        ref={containerRef}
+        className={`relative rounded overflow-hidden ${className}`}
+      >
+        <div className='absolute inset-0 bg-gray-900/60 rounded flex flex-col items-center justify-center gap-2 z-10'>
+          <div className='w-6 h-6 border border-gray-500 rounded-sm flex items-center justify-center'>
+            <div className='w-3 h-3 border-l-2 border-gray-400'></div>
+          </div>
+          <span className='text-gray-400 text-xs'>Camera ready</span>
+        </div>
       </div>
     )
   }
