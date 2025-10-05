@@ -251,15 +251,41 @@ const AlertsMaintenance = () => {
     if (location.includes(' - ')) {
       const parts = location.split(' - ')
       if (parts.length > 1) {
-        // Extract floor info from first part
-        const floorPart = parts[0]
+        const unitPart = parts[1].trim()
+        const floorPart = parts[0].trim()
+
+        // Extract floor number from first part
         const floorMatch = floorPart.match(
           /floor\s*(\d+)|(\d+)(?:st|nd|rd|th)?\s*floor/i
         )
 
         if (floorMatch) {
           const floorNumber = floorMatch[1] || floorMatch[2]
-          return `floor_${floorNumber}_unit_1` // Default to unit 1 for now
+          const floorId = `floor_${floorNumber}`
+
+          // Check for specific unit types
+          if (unitPart.toLowerCase().includes('pumps room')) {
+            return `${floorId}_pumps_room`
+          }
+
+          // Check for "All Units"
+          if (unitPart.toLowerCase().includes('all units')) {
+            return `${floorId}_all`
+          }
+
+          // Check for unit numbers like "Unit 501", "Unit 302", etc.
+          const unitMatch = unitPart.match(/unit\s*(\d+)/i)
+          if (unitMatch) {
+            const unitNumber = unitMatch[1]
+            // Convert unit number to unit index (e.g., 501 -> 1, 502 -> 2)
+            const lastDigit = parseInt(unitNumber.slice(-1))
+            if (lastDigit >= 1 && lastDigit <= 5) {
+              return `${floorId}_unit_${lastDigit}`
+            }
+          }
+
+          // Default to unit 1 for unrecognized unit patterns
+          return `${floorId}_unit_1`
         }
       }
     }
