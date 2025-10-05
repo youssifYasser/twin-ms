@@ -86,7 +86,7 @@ export const AssetPopupProvider: React.FC<AssetPopupProviderProps> = ({
         setIsVisible(false)
         setCurrentAsset(null)
         setTimeoutId(null)
-      }, 100000) // 100 seconds just for testing
+      }, 10000)
 
       setTimeoutId(newTimeoutId)
     },
