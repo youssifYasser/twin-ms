@@ -1,16 +1,18 @@
 import { ReactNode, useState } from 'react'
 import Sidebar from '@/components/Sidebar'
 import AppBar from '@/components/AppBar'
-import { PageType } from '@/App'
+import { useCurrentPageType, usePageTitle } from '@/hooks/useRouting'
 
 interface LayoutProps {
   children: ReactNode
-  currentPage: PageType
-  onPageChange: (page: PageType) => void
 }
 
-const Layout = ({ children, currentPage, onPageChange }: LayoutProps) => {
+const Layout = ({ children }: LayoutProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const currentPage = useCurrentPageType()
+
+  // Update page title based on current route
+  usePageTitle()
 
   const handleToggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen)
@@ -21,7 +23,6 @@ const Layout = ({ children, currentPage, onPageChange }: LayoutProps) => {
       <Sidebar
         isOpen={isSidebarOpen}
         currentPage={currentPage}
-        onPageChange={onPageChange}
         onToggle={handleToggleSidebar}
       />
       <div

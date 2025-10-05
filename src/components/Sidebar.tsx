@@ -1,7 +1,9 @@
 import { PageType } from '@/App'
 import Logo from '@/components/Logo'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ChevronDown, ChevronRight } from 'lucide-react'
+import { PAGE_TYPE_TO_ROUTE } from '@/config/routes'
 import {
   StatisticsIcon,
   AlertsMaintenanceIcon,
@@ -14,16 +16,20 @@ interface SidebarProps {
   isOpen: boolean
   onToggle: () => void
   currentPage: PageType
-  onPageChange: (page: PageType) => void
 }
 
-const Sidebar = ({
-  isOpen,
-  currentPage,
-  onPageChange,
-  onToggle,
-}: SidebarProps) => {
+const Sidebar = ({ isOpen, currentPage, onToggle }: SidebarProps) => {
+  const navigate = useNavigate()
   const [isAdminExpanded, setIsAdminExpanded] = useState(false)
+
+  // Navigation handler using React Router
+  const handleNavigation = (pageType: PageType) => {
+    const route = PAGE_TYPE_TO_ROUTE[pageType]
+    if (route) {
+      navigate(route)
+      onToggle() // Close sidebar on mobile
+    }
+  }
 
   const menuItems = [
     { id: 'statistics', label: 'Statistics', icon: StatisticsIcon },
@@ -89,10 +95,7 @@ const Sidebar = ({
               return (
                 <li key={item.id}>
                   <button
-                    onClick={() => {
-                      onPageChange(item.id as PageType)
-                      onToggle()
-                    }}
+                    onClick={() => handleNavigation(item.id as PageType)}
                     className='w-full flex items-center p-3 text-left rounded-lg transition-all duration-200 group'
                   >
                     {typeof IconComponent === 'string' ? (
@@ -191,10 +194,9 @@ const Sidebar = ({
                           }}
                         >
                           <button
-                            onClick={() => {
-                              onPageChange(item.id as PageType)
-                              onToggle()
-                            }}
+                            onClick={() =>
+                              handleNavigation(item.id as PageType)
+                            }
                             className={`w-full flex items-center p-2 text-left rounded-lg transition-all duration-200 group hover:bg-slate-600/50 ${
                               isSubActive ? 'bg-slate-600/70' : ''
                             }`}
