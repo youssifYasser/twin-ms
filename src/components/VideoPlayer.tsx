@@ -9,6 +9,7 @@ interface VideoPlayerProps {
   muted?: boolean
   controls?: boolean
   lazyLoad?: boolean
+  enableVideo?: boolean // Simple prop to control video playback
 }
 
 const VideoPlayer: React.FC<VideoPlayerProps> = ({
@@ -19,12 +20,30 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({
   muted = true,
   controls = false,
   lazyLoad = true,
+  enableVideo = false, // Default to false (videos off)
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
   const [shouldLoad, setShouldLoad] = useState(!lazyLoad) // Load immediately if lazy loading is disabled
+
+  // If videos are disabled, show placeholder state
+  if (!enableVideo) {
+    return (
+      <div
+        ref={containerRef}
+        className={`relative rounded overflow-hidden ${className}`}
+      >
+        <div className='absolute inset-0 bg-gray-900/60 rounded flex flex-col items-center justify-center gap-2 z-10'>
+          <div className='w-6 h-6 border border-gray-500 rounded-sm flex items-center justify-center'>
+            <div className='w-3 h-3 border-l-2 border-gray-400'></div>
+          </div>
+          <span className='text-gray-400 text-xs'>Camera ready</span>
+        </div>
+      </div>
+    )
+  }
 
   // Intersection Observer for lazy loading
   useEffect(() => {

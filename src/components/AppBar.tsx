@@ -76,6 +76,7 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
             />
             <span>Live Data</span>
           </button>
+
           {/* Global Search */}
           <GlobalSearch className='w-96' />
 

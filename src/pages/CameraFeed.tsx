@@ -16,6 +16,7 @@ const CameraFeed = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [itemsPerRow, setItemsPerRow] = useState<ItemsPerRow>(4)
   const [showItemsDropdown, setShowItemsDropdown] = useState(false)
+  const [enableVideos, setEnableVideos] = useState(false) // Simple local state
 
   const { filterState } = useFilter()
 
@@ -49,6 +50,16 @@ const CameraFeed = () => {
 
   return (
     <div className='space-y-6 w-full max-w-full'>
+      {/* Video Status Banner */}
+      {!enableVideos && (
+        <div className='bg-orange-500/20 border border-orange-500/30 backdrop-blur-24 p-4 rounded-lg'>
+          <p className='text-orange-400 text-center text-sm'>
+            📹 <strong>Video Playback Disabled</strong> - Videos are currently
+            turned off for testing. Use the toggle below to enable them.
+          </p>
+        </div>
+      )}
+
       {/* Filter Status Display */}
       {filterState.selectedFloor !== 'All Floors' && (
         <div className='bg-bg-card backdrop-blur-24 p-4 rounded-lg border border-primary-border'>
@@ -83,6 +94,21 @@ const CameraFeed = () => {
             >
               AI Detection
             </button>
+
+            {/* Simple Video Toggle */}
+            <div className='flex items-center gap-2 ml-4 pl-4 border-l border-gray-600'>
+              <button
+                onClick={() => setEnableVideos(!enableVideos)}
+                className={`py-1 px-3 rounded-lg font-bold text-sm transition-colors ${
+                  enableVideos
+                    ? 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-slate-700 text-white hover:bg-slate-600'
+                }`}
+              >
+                📹 {enableVideos ? 'Videos On' : 'Videos Off'}
+              </button>
+            </div>
+
             <div className='flex items-center gap-3'>
               <p className='text-[#9CA3AF] font-bold text-sm'>
                 {cameraStats.online} / {cameraStats.total} cameras online
@@ -179,13 +205,18 @@ const CameraFeed = () => {
                 key={camera.id}
                 camera={camera}
                 activeTab={activeTab}
+                enableVideos={enableVideos}
               />
             ))}
           </div>
         ) : (
           // List View - Table
           <div className='w-full'>
-            <CameraTable cameras={cameras} activeTab={activeTab} />
+            <CameraTable
+              cameras={cameras}
+              activeTab={activeTab}
+              enableVideos={enableVideos}
+            />
           </div>
         )}
       </div>
@@ -197,9 +228,11 @@ const CameraFeed = () => {
 const CameraCard = ({
   camera,
   activeTab,
+  enableVideos,
 }: {
   camera: any
   activeTab: 'live' | 'ai'
+  enableVideos: boolean
 }) => {
   // Get video feed for this camera
   const videoFeed = getVideoFeedForCamera(camera.id)
@@ -257,6 +290,7 @@ const CameraCard = ({
                   muted={true}
                   controls={false}
                   lazyLoad={true}
+                  enableVideo={enableVideos}
                 />
               </div>
             )
@@ -347,9 +381,11 @@ const CameraCard = ({
 const CameraTable = ({
   cameras,
   activeTab,
+  enableVideos,
 }: {
   cameras: any[]
   activeTab: 'live' | 'ai'
+  enableVideos: boolean
 }) => {
   return (
     <div className='bg-[#111827CC] border border-[#37415180] backdrop-blur-24 rounded-2xl overflow-hidden w-full'>
@@ -398,6 +434,7 @@ const CameraTable = ({
                 key={camera.id}
                 camera={camera}
                 activeTab={activeTab}
+                enableVideos={enableVideos}
               />
             ))}
           </tbody>
@@ -411,9 +448,11 @@ const CameraTable = ({
 const CameraTableRow = ({
   camera,
   activeTab,
+  enableVideos,
 }: {
   camera: any
   activeTab: 'live' | 'ai'
+  enableVideos: boolean
 }) => {
   // Get video feed for this camera
   const videoFeed = getVideoFeedForCamera(camera.id)
@@ -459,6 +498,7 @@ const CameraTableRow = ({
                 muted={true}
                 controls={false}
                 lazyLoad={true}
+                enableVideo={enableVideos}
               />
             ) : (
               <div className='w-full h-full bg-gray-800/40 rounded flex items-center justify-center'>
