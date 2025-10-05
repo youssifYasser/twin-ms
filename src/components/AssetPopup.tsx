@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { AssetData } from '@/context/AssetPopupContext'
+import { PumpIcon } from '@/icons'
 
 interface AssetPopupProps {
   asset: AssetData
@@ -16,13 +17,13 @@ const AssetPopup: React.FC<AssetPopupProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>('overview')
 
-  // Get asset icon based on type (Remix icons)
+  // Get asset icon based on type
   const getAssetIcon = () => {
     switch (asset.type) {
       case 'light':
-        return 'ri-lightbulb-line'
+        return { type: 'remix', icon: 'ri-lightbulb-line' }
       case 'hvac':
-        return 'ri-temp-hot-line'
+        return { type: 'remix', icon: 'ri-temp-hot-line' }
       case 'pump':
       case 'pump1':
       case 'pump2':
@@ -30,9 +31,9 @@ const AssetPopup: React.FC<AssetPopupProps> = ({
       case 'pump4':
       case 'pump5':
       case 'pump6':
-        return 'ri-drop-line'
+        return { type: 'component', icon: PumpIcon }
       default:
-        return 'ri-lightbulb-line'
+        return { type: 'remix', icon: 'ri-lightbulb-line' }
     }
   }
 
@@ -85,6 +86,7 @@ const AssetPopup: React.FC<AssetPopupProps> = ({
   }
 
   const statusConfig = getStatusConfig()
+  const assetIconConfig = getAssetIcon()
 
   // Get asset type specific label
   const getAssetTypeLabel = () => {
@@ -144,7 +146,11 @@ const AssetPopup: React.FC<AssetPopupProps> = ({
         <div className='flex items-center justify-between p-4 border-b border-slate-700/50'>
           <div className='flex items-center gap-3'>
             <div className='w-8 h-8 bg-slate-800 rounded-lg flex items-center justify-center'>
-              <i className={`${getAssetIcon()} text-teal-400`}></i>
+              {assetIconConfig.type === 'component' ? (
+                <assetIconConfig.icon width={16} height={16} fill='#14B8A6' />
+              ) : (
+                <i className={`${assetIconConfig.icon} text-teal-400`}></i>
+              )}
             </div>
             <div>
               <h3 className='font-semibold text-white text-sm'>{asset.name}</h3>

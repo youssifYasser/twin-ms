@@ -81,6 +81,19 @@ const createMaintenanceTask = (
 
 // Generate alerts for different floors and units
 export const ALERTS_DATA: LocationAlertType[] = [
+  createAlert(
+    'Pump System Critical Failure',
+    'Pump 2 technical malfunction detected - system shutdown required',
+    'floor_5',
+    'floor_5_pumps_room',
+    '15 min ago',
+    'critical',
+    'Pump Maintenance Team',
+    'active',
+    '#FF4545',
+    WaterIcon
+  ),
+
   // Critical alerts
   createAlert(
     'Fire Detection System Alert',
@@ -93,19 +106,6 @@ export const ALERTS_DATA: LocationAlertType[] = [
     'active',
     '#EF4444',
     FireIcon
-  ),
-
-  createAlert(
-    'Pump System Critical Failure',
-    'Pump 2 technical malfunction detected - system shutdown required',
-    'floor_5',
-    'floor_5_pumps_room',
-    '15 min ago',
-    'critical',
-    'Pump Maintenance Team',
-    'active',
-    '#FF4545',
-    WaterIcon
   ),
 
   createAlert(

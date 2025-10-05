@@ -156,6 +156,8 @@ BUILDING_DATA.forEach((floor) => {
     // Add 2 pumps per floor
     for (let i = 1; i <= 2; i++) {
       const isPump2OnFloor5 = floor.id === 'floor_5' && i === 2
+      const isPump1OnFloor5 = floor.id === 'floor_5' && i === 1
+
       DEVICES_DATA.push(
         createDevice(
           `pump_${floor.id}_${i}`,
@@ -163,8 +165,12 @@ BUILDING_DATA.forEach((floor) => {
           'Pumps',
           floor.id,
           pumpsRoomUnit.id,
-          isPump2OnFloor5 ? 0 : 100, // Pump 2 Floor 5 is down
-          isPump2OnFloor5 ? false : Math.random() > 0.3, // Pump 2 Floor 5 is off
+          isPump2OnFloor5 ? 0 : 100, // Pump 2 Floor 5 is down, others at 100%
+          isPump2OnFloor5
+            ? false
+            : isPump1OnFloor5
+            ? true
+            : Math.random() > 0.3, // Pump 1 Floor 5 always on, Pump 2 Floor 5 off, others random
           '800W', // Typical pump power consumption
           undefined,
           isPump2OnFloor5 // Pump 2 Floor 5 has malfunction

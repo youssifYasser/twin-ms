@@ -148,6 +148,19 @@ const SystemControl = () => {
             return device
           }
 
+          // Special protection for Pump 1 on Floor 5 - always keep it on
+          if (device.id === 'pump_floor_5_1') {
+            const deviceConfig = presetConfig[device.deviceType]?.[device.id]
+            if (deviceConfig) {
+              return {
+                ...device,
+                progress: deviceConfig.progress,
+                isOn: true, // Force to stay on regardless of preset
+              }
+            }
+            return device
+          }
+
           const deviceConfig = presetConfig[device.deviceType]?.[device.id]
           if (deviceConfig) {
             return {
@@ -175,7 +188,32 @@ const SystemControl = () => {
             return device
           }
 
+          // Special protection for Pump 1 on Floor 5 - always keep it on
+          if (deviceId === 'pump_floor_5_1') {
+            // if ('isOn' in updates && !updates.isOn) {
+            //   console.log('Pump 1 Floor 5 must remain on - ignoring off command')
+            //   return device // Don't allow turning off
+            // }
+            if ('progress' in updates && updates.progress === 0) {
+              console.log(
+                'Pump 1 Floor 5 must remain on - preventing progress = 0'
+              )
+              return device // Don't allow setting progress to 0 (which effectively turns it off)
+            }
+            if ('isOn' in updates && updates.isOn) {
+              console.log('Pump 1 Floor 5 - allowing turn on command')
+              // Allow turn-on commands to proceed normally
+            }
+          }
+
           const updatedDevice = { ...device, ...updates }
+
+          // Failsafe: If Pump 1 Floor 5 somehow ends up off, force it back on
+          // if (deviceId === 'pump_floor_5_1' && !updatedDevice.isOn) {
+          //   console.log('Pump 1 Floor 5 failsafe - forcing back to ON state')
+          //   updatedDevice.isOn = true
+          //   updatedDevice.progress = Math.max(updatedDevice.progress, 50) // Ensure minimum progress
+          // }
 
           // Send WebSocket message for device control changes
           const deviceType = updatedDevice.deviceType

@@ -142,7 +142,7 @@ const RealtimeDataContext = createContext<RealtimeDataContextType | undefined>(
 export const RealtimeDataProvider: React.FC<RealtimeDataProviderProps> = ({
   children,
 }) => {
-  const [isRealtimeEnabled, setIsRealtimeEnabled] = useState<boolean>(false)
+  const [isRealtimeEnabled, setIsRealtimeEnabled] = useState<boolean>(true)
   const [simulatedData, setSimulatedData] = useState<SimulatedData>({})
   const [isDataUpdating, setIsDataUpdating] = useState<boolean>(false)
   const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now())

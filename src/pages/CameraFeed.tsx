@@ -16,7 +16,7 @@ const CameraFeed = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [itemsPerRow, setItemsPerRow] = useState<ItemsPerRow>(4)
   const [showItemsDropdown, setShowItemsDropdown] = useState(false)
-  const [enableVideos, setEnableVideos] = useState(false) // Simple local state
+  const [enableVideos, setEnableVideos] = useState(true) // Simple local state
 
   const { filterState } = useFilter()
 
