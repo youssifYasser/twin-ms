@@ -18,7 +18,8 @@ import { useMemo } from 'react'
 const Statistics = () => {
   const { filterState } = useFilter()
   const { unit501Occupancy } = useWebSocket()
-  const { getModifiedStatistics } = useRealtimeData()
+  const { getModifiedStatistics, isRealtimeEnabled, timePeriod } =
+    useRealtimeData()
 
   // Get filtered statistics data based on current floor/unit selection
   const statisticsData = useMemo(() => {
@@ -62,6 +63,18 @@ const Statistics = () => {
 
   return (
     <div className='space-y-6'>
+      {/* Time Period Indicator - Only show when real-time is disabled */}
+      {!isRealtimeEnabled && (
+        <div className='bg-blue-500/20 border border-blue-500/30 backdrop-blur-24 p-4 rounded-lg'>
+          <p className='text-blue-400 text-center text-sm'>
+            📊 <strong>Historical Data View</strong> - Showing data for the last{' '}
+            <span className='font-bold text-blue-300'>
+              {timePeriod.toLowerCase()}
+            </span>
+          </p>
+        </div>
+      )}
+
       {/* Display current filter information */}
       {filterState.selectedFloor !== 'All Floors' && (
         <div className='bg-bg-card backdrop-blur-24 p-4 rounded-lg border border-primary-border'>

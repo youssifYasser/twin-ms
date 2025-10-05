@@ -119,6 +119,8 @@ interface RealtimeDataContextType {
   getModifiedStatistics: (originalStats: StatisticsType[]) => StatisticsType[]
   isDataUpdating: boolean
   lastUpdateTime: number
+  timePeriod: string
+  setTimePeriod: (period: string) => void
 }
 
 interface RealtimeDataProviderProps {
@@ -146,6 +148,8 @@ export const RealtimeDataProvider: React.FC<RealtimeDataProviderProps> = ({
   const [simulatedData, setSimulatedData] = useState<SimulatedData>({})
   const [isDataUpdating, setIsDataUpdating] = useState<boolean>(false)
   const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now())
+  const [timePeriod, setTimePeriod] = useState<string>('1 Year')
+  const [timePeriodVersion, setTimePeriodVersion] = useState<number>(0) // Force re-renders when time period changes
 
   // Initialize base values for statistics
   const initializeStatistic = useCallback(
@@ -249,6 +253,13 @@ export const RealtimeDataProvider: React.FC<RealtimeDataProviderProps> = ({
     setIsRealtimeEnabled((prev) => {
       const newState = !prev
 
+      // When disabling real-time, always reset to "1 Year"
+      if (!newState) {
+        setTimePeriod('1 Year')
+        setTimePeriodVersion((prevVersion) => prevVersion + 1)
+        localStorage.setItem('statisticsTimePeriod', '1 Year')
+      }
+
       // Persist state to localStorage
       localStorage.setItem('realtimeSimulationEnabled', newState.toString())
 
@@ -262,23 +273,158 @@ export const RealtimeDataProvider: React.FC<RealtimeDataProviderProps> = ({
     if (persistedState === 'true') {
       setIsRealtimeEnabled(true)
     }
+
+    // Always start with "1 Year" as default, don't load persisted time period
+    setTimePeriod('1 Year')
+    localStorage.setItem('statisticsTimePeriod', '1 Year')
   }, [])
 
-  // Get modified statistics with simulated data
+  // Time period scaling factors
+  const getTimePeriodMultiplier = useCallback((period: string): number => {
+    switch (period) {
+      case '1 Week':
+        return 1 / 3 // 1 Year / 3 for larger presentation values
+      case '1 Month':
+        return 1 / 2 // 1 Year / 2 for larger presentation values
+      case '1 Year':
+      default:
+        return 1 // Baseline (no scaling)
+    }
+  }, [])
+
+  // Update time period with persistence
+  const updateTimePeriod = useCallback((period: string) => {
+    setTimePeriod(period)
+    setTimePeriodVersion((prev) => prev + 1) // Force re-renders
+    localStorage.setItem('statisticsTimePeriod', period)
+  }, [])
+
+  // Get modified statistics with simulated data and time period scaling
   const getModifiedStatistics = useCallback(
     (originalStats: StatisticsType[]): StatisticsType[] => {
       return originalStats.map((stat) => {
         // Initialize if not exists
         initializeStatistic(stat.title, stat.value)
 
+        let processedValue = stat.value
+        let processedPercentageChange = stat.percentageChange
+
+        // Apply time period scaling when real-time is disabled
+        if (!isRealtimeEnabled) {
+          const multiplier = getTimePeriodMultiplier(timePeriod)
+
+          // Only scale cumulative/total values, not rates or percentages
+          const shouldScale =
+            stat.title.toLowerCase().includes('consumption') ||
+            stat.title.toLowerCase().includes('cost') ||
+            stat.title.toLowerCase().includes('kwh') ||
+            stat.title.toLowerCase().includes('total') ||
+            stat.title.toLowerCase().includes('energy') ||
+            stat.title.toLowerCase().includes('usage') ||
+            stat.title.toLowerCase().includes('spent') ||
+            stat.title.toLowerCase().includes('bills') ||
+            stat.title.toLowerCase().includes('water') ||
+            stat.title.toLowerCase().includes('demand') ||
+            stat.title.toLowerCase().includes('price') ||
+            (stat.measurementUnit &&
+              stat.measurementUnit.toLowerCase().includes('kwh')) ||
+            (stat.measurementUnit &&
+              stat.measurementUnit.toLowerCase().includes('m³')) ||
+            (stat.measurementUnit &&
+              stat.measurementUnit.toLowerCase().includes('sar')) ||
+            (stat.measurementUnit &&
+              stat.measurementUnit.toLowerCase().includes('$')) ||
+            (stat.measurementUnit &&
+              stat.measurementUnit.toLowerCase().includes('€')) ||
+            (stat.title.toLowerCase().includes('maintenance') &&
+              !stat.title.toLowerCase().includes('time')) ||
+            (stat.title.toLowerCase().includes('alert') &&
+              !stat.title.toLowerCase().includes('time') &&
+              !stat.title.toLowerCase().includes('avg'))
+
+          // Don't scale temperature, percentages, or rates
+          const shouldNotScale =
+            stat.title.toLowerCase().includes('temperature') ||
+            stat.title.toLowerCase().includes('°c') ||
+            stat.title.toLowerCase().includes('humidity') ||
+            stat.title.toLowerCase().includes('occupancy') ||
+            stat.value.includes('%') ||
+            stat.title.toLowerCase().includes('avg') ||
+            stat.title.toLowerCase().includes('average') ||
+            stat.title.toLowerCase().includes('time')
+
+          if (shouldScale && !shouldNotScale) {
+            const numericValue =
+              parseFloat(stat.value.replace(/[^0-9.-]/g, '')) || 0
+            const scaledValue = numericValue * multiplier
+
+            // Keep only the numeric value, don't include units in the value field
+            // The measurementUnit field will handle the units separately
+            if (
+              stat.measurementUnit &&
+              stat.measurementUnit.toLowerCase().includes('kwh')
+            ) {
+              processedValue = scaledValue.toFixed(2)
+            } else if (
+              stat.measurementUnit &&
+              stat.measurementUnit.toLowerCase().includes('sar')
+            ) {
+              processedValue = scaledValue.toFixed(2)
+            } else if (
+              stat.measurementUnit &&
+              stat.measurementUnit.toLowerCase().includes('m³')
+            ) {
+              processedValue = scaledValue.toFixed(1)
+            } else if (
+              stat.measurementUnit &&
+              stat.measurementUnit.toLowerCase().includes('kw')
+            ) {
+              processedValue = scaledValue.toFixed(1)
+            } else if (
+              stat.measurementUnit &&
+              stat.measurementUnit.toLowerCase().includes('$')
+            ) {
+              processedValue = scaledValue.toFixed(2)
+            } else if (
+              stat.measurementUnit &&
+              stat.measurementUnit.toLowerCase().includes('€')
+            ) {
+              processedValue = scaledValue.toFixed(2)
+            } else if (
+              stat.measurementUnit &&
+              stat.measurementUnit.trim() !== ''
+            ) {
+              // For other units, use appropriate decimal places
+              processedValue = scaledValue.toFixed(2)
+            } else {
+              // No unit, round to integer
+              processedValue = Math.round(scaledValue).toString()
+            }
+
+            console.log(
+              `🔧 Scaling ${stat.title}: ${stat.value} ${
+                stat.measurementUnit || ''
+              } → ${processedValue} ${
+                stat.measurementUnit || ''
+              } (${multiplier}x)`
+            )
+          }
+
+          return {
+            ...stat,
+            value: processedValue,
+            percentageChange: processedPercentageChange,
+          }
+        }
+
+        // Apply real-time simulation when enabled
         const simulatedStat = simulatedData[stat.title]
-        if (!isRealtimeEnabled || !simulatedStat) {
+        if (!simulatedStat) {
           return stat
         }
 
         // Special handling for Unit 501 occupancy - preserve WebSocket control
         if (stat.title === 'Unit 501 Occupancy') {
-          // Don't modify Unit 501 occupancy with simulation - let WebSocket control it
           return stat
         }
 
@@ -299,19 +445,25 @@ export const RealtimeDataProvider: React.FC<RealtimeDataProviderProps> = ({
         if (simulatedStat.lastTrend === 'up') {
           trendGraph = '/images/shapes/trend-up-1.png'
         } else if (simulatedStat.lastTrend === 'down') {
-          trendGraph = '/images/shapes/trend-up-2.png' // We'll use this for down trend
+          trendGraph = '/images/shapes/trend-up-2.png'
         }
 
         return {
           ...stat,
           value: formattedValue,
           trendGraph,
-          // Add trend direction for visual feedback
           trendDirection: simulatedStat.lastTrend,
         } as StatisticsType & { trendDirection: string }
       })
     },
-    [simulatedData, isRealtimeEnabled, initializeStatistic]
+    [
+      simulatedData,
+      isRealtimeEnabled,
+      timePeriod,
+      timePeriodVersion, // Include version to force re-renders
+      initializeStatistic,
+      getTimePeriodMultiplier,
+    ]
   )
 
   const contextValue: RealtimeDataContextType = {
@@ -320,6 +472,8 @@ export const RealtimeDataProvider: React.FC<RealtimeDataProviderProps> = ({
     getModifiedStatistics,
     isDataUpdating,
     lastUpdateTime,
+    timePeriod,
+    setTimePeriod: updateTimePeriod,
   }
 
   return (

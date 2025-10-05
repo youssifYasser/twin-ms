@@ -5,7 +5,8 @@ import FloorUnitFilter from '@/components/FloorUnitFilter'
 import PageStats from '@/components/PageStats'
 import GlobalSearch from '@/components/GlobalSearch'
 import { useRealtimeData } from '@/context/RealtimeDataContext'
-import { MenuIcon } from 'lucide-react'
+import { MenuIcon, ChevronDownIcon } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
 
 interface AppBarProps {
   currentPage: PageType
@@ -14,7 +15,27 @@ interface AppBarProps {
 }
 
 const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
-  const { isRealtimeEnabled, toggleRealtime } = useRealtimeData()
+  const { isRealtimeEnabled, toggleRealtime, timePeriod, setTimePeriod } =
+    useRealtimeData()
+  const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowTimePeriodDropdown(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const timePeriodOptions = ['1 Week', '1 Month', '1 Year']
 
   const getPageTitle = (page: PageType): string => {
     switch (page) {
@@ -58,24 +79,63 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
 
         <div className='flex items-center space-x-4'>
           {/* Real-time Data Toggle */}
-          <button
-            className={`flex items-center px-4 py-2 text-sm font-roboto transition-all duration-200 rounded-lg ${
-              isRealtimeEnabled
-                ? 'bg-green-600 text-white hover:bg-green-700 shadow-lg'
-                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
-            }`}
-            onClick={toggleRealtime}
-            title={
-              isRealtimeEnabled
-                ? 'Disable Real-time Data'
-                : 'Enable Real-time Data'
-            }
-          >
-            <RealtimeIcon
-              className={`mr-2 ${isRealtimeEnabled ? 'animate-pulse' : ''}`}
-            />
-            <span>Live Data</span>
-          </button>
+          <div className='flex items-center gap-0'>
+            <button
+              className={`flex items-center px-4 py-2 text-sm font-roboto transition-all duration-200 ${
+                isRealtimeEnabled
+                  ? 'bg-green-600 text-white hover:bg-green-700 shadow-lg rounded-lg'
+                  : 'bg-gray-600 text-gray-300 hover:bg-gray-500 rounded-s-lg'
+              }`}
+              onClick={toggleRealtime}
+              title={
+                isRealtimeEnabled
+                  ? 'Disable Real-time Data'
+                  : 'Enable Real-time Data'
+              }
+            >
+              <RealtimeIcon
+                className={`mr-2 ${isRealtimeEnabled ? 'animate-pulse' : ''}`}
+              />
+              <span>Live Data</span>
+            </button>
+
+            {/* Time Period Dropdown - Only show on Statistics page when real-time is disabled */}
+            {!isRealtimeEnabled && (
+              <div className='relative' ref={dropdownRef}>
+                <button
+                  onClick={() =>
+                    setShowTimePeriodDropdown(!showTimePeriodDropdown)
+                  }
+                  className='flex items-center gap-2 px-3 py-2 text-sm font-roboto bg-gray-600 text-gray-300 hover:bg-gray-500 rounded-e-lg transition-colors duration-200'
+                >
+                  <span>{timePeriod}</span>
+                  <ChevronDownIcon className='w-4 h-4' />
+                </button>
+
+                {/* Dropdown Menu */}
+                {showTimePeriodDropdown && (
+                  <div className='absolute top-full mt-1 right-0 bg-[#1F2937] border border-[#374151] rounded-lg shadow-lg z-50 min-w-[120px]'>
+                    {timePeriodOptions.map((option) => (
+                      <button
+                        key={option}
+                        onClick={() => {
+                          setTimePeriod(option)
+                          setShowTimePeriodDropdown(false)
+                        }}
+                        className={`w-full px-3 py-2 text-left text-sm hover:bg-[#374151] transition-colors first:rounded-t-lg last:rounded-b-lg ${
+                          timePeriod === option
+                            ? 'bg-[#3BA091] text-white'
+                            : 'text-gray-300'
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Global Search */}
           <GlobalSearch className='w-96' />
