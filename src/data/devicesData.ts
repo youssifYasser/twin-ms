@@ -26,7 +26,8 @@ const createDevice = (
   progress: number = 0,
   isOn: boolean = false,
   maxPower?: string,
-  currentFloor?: string
+  currentFloor?: string,
+  hasMalfunction?: boolean
 ): LocationDeviceType => {
   const floor = BUILDING_DATA.find((f) => f.id === floorId)
   const unit = unitId && floor ? floor.units.find((u) => u.id === unitId) : null
@@ -48,6 +49,7 @@ const createDevice = (
     floorId,
     unitId,
     currentFloor,
+    hasMalfunction,
   }
 }
 
@@ -57,6 +59,11 @@ BUILDING_DATA.forEach((floor) => {
   floor.units.forEach((unit) => {
     if (!unit.id.includes('_all') && !unit.id.includes('_pumps_room')) {
       const unitNumber = unit.number
+
+      // Special case for Unit 501 on Floor 5 - start at 100%
+      const isUnit501Floor5 =
+        floor.id === 'floor_5' && unit.id === 'floor_5_unit_1'
+
       DEVICES_DATA.push(
         createDevice(
           `lighting_${unit.id}`,
@@ -64,8 +71,8 @@ BUILDING_DATA.forEach((floor) => {
           'Lighting',
           floor.id,
           unit.id,
-          Math.floor(Math.random() * 100),
-          Math.random() > 0.3,
+          isUnit501Floor5 ? 100 : Math.floor(Math.random() * 100), // Unit 501 Floor 5 at 100%
+          isUnit501Floor5 ? true : Math.random() > 0.3, // Unit 501 Floor 5 is on
           '24W'
         )
       )
@@ -148,6 +155,7 @@ BUILDING_DATA.forEach((floor) => {
   if (pumpsRoomUnit) {
     // Add 2 pumps per floor
     for (let i = 1; i <= 2; i++) {
+      const isPump2OnFloor5 = floor.id === 'floor_5' && i === 2
       DEVICES_DATA.push(
         createDevice(
           `pump_${floor.id}_${i}`,
@@ -155,12 +163,42 @@ BUILDING_DATA.forEach((floor) => {
           'Pumps',
           floor.id,
           pumpsRoomUnit.id,
-          100, // On/off device, so 100 when on, 0 when off
-          Math.random() > 0.3, // Random initial state
-          '800W' // Typical pump power consumption
+          isPump2OnFloor5 ? 0 : 100, // Pump 2 Floor 5 is down
+          isPump2OnFloor5 ? false : Math.random() > 0.3, // Pump 2 Floor 5 is off
+          '800W', // Typical pump power consumption
+          undefined,
+          isPump2OnFloor5 // Pump 2 Floor 5 has malfunction
         )
       )
     }
+
+    // Add lighting for pumps room
+    DEVICES_DATA.push(
+      createDevice(
+        `lighting_${pumpsRoomUnit.id}`,
+        `${floor.displayName} Pumps Room Lights`,
+        'Lighting',
+        floor.id,
+        pumpsRoomUnit.id,
+        Math.floor(Math.random() * 100),
+        Math.random() > 0.2,
+        '36W' // Higher wattage for industrial lighting
+      )
+    )
+
+    // Add security door for pumps room
+    DEVICES_DATA.push(
+      createDevice(
+        `security_${pumpsRoomUnit.id}`,
+        `${floor.displayName} Pumps Room Security Door`,
+        'Security',
+        floor.id,
+        pumpsRoomUnit.id,
+        Math.random() > 0.1 ? 100 : 0, // Most doors are locked
+        Math.random() > 0.1, // Most doors are secured
+        '' // Security devices don't have power rating
+      )
+    )
   }
 })
 

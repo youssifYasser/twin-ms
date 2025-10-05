@@ -13,14 +13,34 @@ const HVACCard = ({
   onProgressChange,
   onToggle,
 }: HVACCardProps) => {
-  const { name, floor, progress, isOn } = deviceData
+  const { name, floor, progress, isOn, hasMalfunction } = deviceData
   const [activeMode, setActiveMode] = useState<'cool' | 'auto' | 'heat'>('auto')
 
   // Quick preset temperatures
   const COOL_TEMP = 18
   const HEAT_TEMP = 28
 
+  // Get card styling based on malfunction status
+  const getCardStyling = () => {
+    if (hasMalfunction) {
+      return {
+        backgroundColor: 'rgba(255, 69, 69, 0.1)', // #FF4545 with 10% opacity
+        borderColor: '#FF4545',
+      }
+    }
+    return {
+      backgroundColor: '#1F293766',
+      borderColor: '#37415180',
+    }
+  }
+
+  const cardStyle = getCardStyling()
+
   const getBulletColor = () => {
+    // If device has malfunction, show critical red
+    if (hasMalfunction) {
+      return '#FF4545'
+    }
     return isOn ? '#4ADE80' : '#6B7280'
   }
 
@@ -33,6 +53,9 @@ const HVACCard = ({
   }
 
   const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Disable control if device has malfunction
+    if (hasMalfunction) return
+
     const newTemp = parseInt(e.target.value)
     onProgressChange(newTemp)
 
@@ -43,6 +66,9 @@ const HVACCard = ({
   }
 
   const handleQuickPreset = (mode: 'cool' | 'heat') => {
+    // Disable control if device has malfunction
+    if (hasMalfunction) return
+
     const temp = mode === 'cool' ? COOL_TEMP : HEAT_TEMP
     onProgressChange(temp)
     setActiveMode(mode)
@@ -54,6 +80,9 @@ const HVACCard = ({
   }
 
   const handleModeSelect = (mode: 'cool' | 'auto' | 'heat') => {
+    // Disable control if device has malfunction
+    if (hasMalfunction) return
+
     setActiveMode(mode)
 
     // Apply mode-specific temperature
@@ -70,6 +99,9 @@ const HVACCard = ({
   }
 
   const handleToggle = () => {
+    // Disable control if device has malfunction
+    if (hasMalfunction) return
+
     onToggle(!isOn)
   }
 
@@ -98,7 +130,13 @@ const HVACCard = ({
   }
 
   return (
-    <div className='border-[#37415180] bg-[#1F293766] p-4 rounded-lg border  transition-all duration-300 hover:border-slate-600'>
+    <div
+      className='p-4 rounded-lg border transition-all duration-300 hover:border-slate-600'
+      style={{
+        backgroundColor: cardStyle.backgroundColor,
+        borderColor: cardStyle.borderColor,
+      }}
+    >
       {/* Header */}
       <div className='flex items-start justify-between mb-3'>
         <div className='flex items-center gap-2'>
@@ -106,11 +144,21 @@ const HVACCard = ({
             className='w-3 h-3 rounded-full transition-colors duration-300'
             style={{ backgroundColor: getBulletColor() }}
           />
-          <h4 className='font-semibold text-sm text-white'>{name}</h4>
+          <div className='flex flex-col'>
+            <h4 className='font-semibold text-sm text-white'>{name}</h4>
+            <p className='text-[#9CA3AF] text-xs font-normal'>{floor}</p>
+            {hasMalfunction && (
+              <p className='text-[#FF4545] text-xs font-medium'>MALFUNCTION</p>
+            )}
+          </div>
         </div>
         <button
           onClick={handleToggle}
-          className='w-6 h-6 flex items-center justify-center text-slate-400 hover:text-white cursor-pointer transition-colors'
+          className={`w-6 h-6 flex items-center justify-center text-slate-400 transition-colors ${
+            hasMalfunction
+              ? 'opacity-50 cursor-not-allowed'
+              : 'hover:text-white cursor-pointer'
+          }`}
         >
           <Settings className='w-4 h-4' />
         </button>
@@ -141,13 +189,15 @@ const HVACCard = ({
               max='30'
               value={progress}
               onChange={handleProgressChange}
-              disabled={!isOn}
-              className='w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer slider'
+              disabled={!isOn || hasMalfunction}
+              className={`w-full h-2 bg-slate-600 rounded-lg appearance-none slider ${
+                hasMalfunction ? 'cursor-not-allowed' : 'cursor-pointer'
+              }`}
               style={{
                 background: `linear-gradient(to right, #3B82F6 0%, #3B82F6 ${
                   ((progress - 15) / 15) * 100
                 }%, #475569 ${((progress - 15) / 15) * 100}%, #475569 100%)`,
-                opacity: isOn ? 1 : 0.5,
+                opacity: isOn && !hasMalfunction ? 1 : 0.5,
               }}
             />
             <div className='flex justify-between text-xs text-slate-400 mt-1'>
@@ -171,36 +221,48 @@ const HVACCard = ({
           <div className='grid grid-cols-3 gap-2'>
             <button
               onClick={() => handleQuickPreset('cool')}
-              disabled={!isOn}
-              className={`py-2 px-3 rounded-lg text-sm cursor-pointer transition-colors flex items-center justify-center gap-1 ${
-                activeMode === 'cool' && isOn
+              disabled={!isOn || hasMalfunction}
+              className={`py-2 px-3 rounded-lg text-sm transition-colors flex items-center justify-center gap-1 ${
+                activeMode === 'cool' && isOn && !hasMalfunction
                   ? 'bg-blue-500/30 text-blue-400 border border-blue-500/50'
                   : 'bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 border border-transparent'
-              } ${!isOn ? 'opacity-50 cursor-not-allowed' : ''}`}
+              } ${
+                !isOn || hasMalfunction
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'cursor-pointer'
+              }`}
             >
               <Snowflake className='w-3 h-3' />
               Cool
             </button>
             <button
               onClick={() => handleModeSelect('auto')}
-              disabled={!isOn}
-              className={`py-2 px-3 rounded-lg text-sm cursor-pointer transition-colors flex items-center justify-center gap-1 ${
-                activeMode === 'auto' && isOn
+              disabled={!isOn || hasMalfunction}
+              className={`py-2 px-3 rounded-lg text-sm transition-colors flex items-center justify-center gap-1 ${
+                activeMode === 'auto' && isOn && !hasMalfunction
                   ? 'bg-teal-500/30 text-teal-400 border border-teal-500/50'
                   : 'bg-slate-600 hover:bg-slate-500 text-slate-300 border border-transparent'
-              } ${!isOn ? 'opacity-50 cursor-not-allowed' : ''}`}
+              } ${
+                !isOn || hasMalfunction
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'cursor-pointer'
+              }`}
             >
               <Play className='w-3 h-3' />
               Auto
             </button>
             <button
               onClick={() => handleQuickPreset('heat')}
-              disabled={!isOn}
-              className={`py-2 px-3 rounded-lg text-sm cursor-pointer transition-colors flex items-center justify-center gap-1 ${
-                activeMode === 'heat' && isOn
+              disabled={!isOn || hasMalfunction}
+              className={`py-2 px-3 rounded-lg text-sm transition-colors flex items-center justify-center gap-1 ${
+                activeMode === 'heat' && isOn && !hasMalfunction
                   ? 'bg-orange-500/30 text-orange-400 border border-orange-500/50'
                   : 'bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 border border-transparent'
-              } ${!isOn ? 'opacity-50 cursor-not-allowed' : ''}`}
+              } ${
+                !isOn || hasMalfunction
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'cursor-pointer'
+              }`}
             >
               <Flame className='w-3 h-3' />
               Heat

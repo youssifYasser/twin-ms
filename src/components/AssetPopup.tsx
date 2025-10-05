@@ -24,6 +24,12 @@ const AssetPopup: React.FC<AssetPopupProps> = ({
       case 'hvac':
         return 'ri-temp-hot-line'
       case 'pump':
+      case 'pump1':
+      case 'pump2':
+      case 'pump3':
+      case 'pump4':
+      case 'pump5':
+      case 'pump6':
         return 'ri-drop-line'
       default:
         return 'ri-lightbulb-line'
@@ -38,22 +44,42 @@ const AssetPopup: React.FC<AssetPopupProps> = ({
           color: '#14B8A6',
           bgColor: 'bg-teal-500/20',
           text: 'Operational',
+          icon: 'ri-checkbox-circle-line',
         }
       case 'warning':
         return {
           color: '#F59E0B',
           bgColor: 'bg-yellow-500/20',
           text: 'Warning',
+          icon: 'ri-error-warning-line',
         }
       case 'error':
-        return { color: '#EF4444', bgColor: 'bg-red-500/20', text: 'Error' }
+        return {
+          color: '#EF4444',
+          bgColor: 'bg-red-500/20',
+          text: 'Error',
+          icon: 'ri-close-circle-line',
+        }
+      case 'critical':
+        return {
+          color: '#FF4545',
+          bgColor: 'bg-red-500/20',
+          text: 'Critical',
+          icon: 'ri-alert-line',
+        }
       case 'offline':
-        return { color: '#6B7280', bgColor: 'bg-gray-500/20', text: 'Offline' }
+        return {
+          color: '#6B7280',
+          bgColor: 'bg-gray-500/20',
+          text: 'Offline',
+          icon: 'ri-wifi-off-line',
+        }
       default:
         return {
           color: '#14B8A6',
           bgColor: 'bg-teal-500/20',
           text: 'Operational',
+          icon: 'ri-checkbox-circle-line',
         }
     }
   }
@@ -68,6 +94,12 @@ const AssetPopup: React.FC<AssetPopupProps> = ({
       case 'hvac':
         return 'Climate Control Unit'
       case 'pump':
+      case 'pump1':
+      case 'pump2':
+      case 'pump3':
+      case 'pump4':
+      case 'pump5':
+      case 'pump6':
         return 'Water Circulation Pump'
       default:
         return 'Smart Device'
@@ -118,9 +150,10 @@ const AssetPopup: React.FC<AssetPopupProps> = ({
               <h3 className='font-semibold text-white text-sm'>{asset.name}</h3>
               <div className='flex items-center gap-2 mt-1'>
                 <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 text-teal-400 ${statusConfig.bgColor}`}
+                  className={`px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 ${statusConfig.bgColor}`}
+                  style={{ color: statusConfig.color }}
                 >
-                  <i className='ri-checkbox-circle-line text-xs'></i>
+                  <i className={`${statusConfig.icon} text-xs`}></i>
                   {statusConfig.text}
                 </span>
                 <span className='text-xs text-slate-400'>

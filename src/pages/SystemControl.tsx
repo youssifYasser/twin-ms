@@ -47,42 +47,14 @@ const SystemControl = () => {
   // Debounce timers for value changes
   const debounceTimers = useRef<{ [key: string]: NodeJS.Timeout }>({})
 
-  // Get current floor and unit for WebSocket messages
-  const getCurrentLocation = useCallback(() => {
-    let floor = 'all'
-    let unit = 'all'
-
-    if (filterState.selectedFloorId !== 'all') {
-      if (filterState.selectedFloorId === 'basement') {
-        floor = 'basement'
-      } else if (filterState.selectedFloorId === 'roof') {
-        floor = 'roof'
-      } else if (filterState.selectedFloorId?.startsWith('floor_')) {
-        floor = filterState.selectedFloorId.replace('floor_', '')
-      }
-    }
-
-    if (filterState.selectedUnitId !== 'all') {
-      if (
-        filterState.selectedFloorId === 'basement' ||
-        filterState.selectedFloorId === 'roof'
-      ) {
-        unit = 'all'
-      } else {
-        unit = filterState.selectedUnit.replace('Unit ', '') || 'all'
-      }
-    }
-
-    return { floor, unit }
-  }, [
-    filterState.selectedFloorId,
-    filterState.selectedUnitId,
-    filterState.selectedUnit,
-  ])
-
   // Send device control message to server
   const sendDeviceUpdate = useCallback(
-    (deviceType: DeviceType, status: string, value?: string) => {
+    (
+      deviceType: DeviceType,
+      status: string,
+      value?: string,
+      deviceId?: string
+    ) => {
       let asset = ''
 
       switch (deviceType) {
@@ -99,13 +71,24 @@ const SystemControl = () => {
           asset = 'elevators'
           break
         case 'Pumps':
-          asset = 'pumps'
+          // For pumps, include the specific pump number
+          if (deviceId) {
+            // Extract pump number from deviceId (e.g., pump_floor_3_1 -> pump1)
+            const match = deviceId.match(/pump_.*_(\d+)$/)
+            if (match) {
+              asset = `pump${match[1]}`
+            } else {
+              asset = 'pump1' // fallback
+            }
+          } else {
+            asset = 'pump1' // fallback if no deviceId provided
+          }
           break
       }
 
       sendDeviceControl(asset, status, value)
     },
-    [getCurrentLocation, sendDeviceControl]
+    [sendDeviceControl]
   )
 
   // Get filtered data based on current floor/unit selection
@@ -160,6 +143,11 @@ const SystemControl = () => {
     if (presetConfig) {
       setDeviceData((prevData) =>
         prevData.map((device) => {
+          // Don't apply preset to devices with malfunction
+          if (device.hasMalfunction) {
+            return device
+          }
+
           const deviceConfig = presetConfig[device.deviceType]?.[device.id]
           if (deviceConfig) {
             return {
@@ -182,6 +170,11 @@ const SystemControl = () => {
     setDeviceData((prevData) =>
       prevData.map((device) => {
         if (device.id === deviceId) {
+          // Don't allow updates to devices with malfunction
+          if (device.hasMalfunction) {
+            return device
+          }
+
           const updatedDevice = { ...device, ...updates }
 
           // Send WebSocket message for device control changes
@@ -196,10 +189,10 @@ const SystemControl = () => {
             if (deviceType === 'Lighting' || deviceType === 'HVAC') {
               // For lighting and HVAC, include value
               const value = isOn ? progress.toString() : '0'
-              sendDeviceUpdate(deviceType, status, value)
+              sendDeviceUpdate(deviceType, status, value, deviceId)
             } else {
-              // For security, elevators, and pumps, status only
-              sendDeviceUpdate(deviceType, status)
+              // For security, elevators, and pumps, status only (pass deviceId for pumps)
+              sendDeviceUpdate(deviceType, status, undefined, deviceId)
             }
           } else if ('progress' in updates && isOn) {
             // Value change with debouncing (only when device is on)
@@ -213,7 +206,7 @@ const SystemControl = () => {
             // Set new timer for debounced value update
             debounceTimers.current[deviceKey] = setTimeout(() => {
               if (deviceType === 'Lighting' || deviceType === 'HVAC') {
-                sendDeviceUpdate(deviceType, '1', progress.toString())
+                sendDeviceUpdate(deviceType, '1', progress.toString(), deviceId)
               }
               delete debounceTimers.current[deviceKey]
             }, 500) // 500ms debounce delay

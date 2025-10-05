@@ -409,6 +409,19 @@ export const getOccupancyForFilter = (
       totalOccupancy = unitOccupancy.currentOccupancy
       totalCapacity = unitOccupancy.maxCapacity
     }
+
+    // Special title for Unit 501 to identify it
+    const isUnit501 =
+      selectedFloorId === 'floor_5' && selectedUnitId === 'floor_5_unit_1'
+    const title = isUnit501 ? 'Unit 501 Occupancy' : 'Occupancy Monitoring'
+
+    return {
+      title,
+      value: `${totalOccupancy}/${totalCapacity}`,
+      percentageChange: 2.5,
+      trendGraph: '/images/shapes/trend-up-2.png',
+      measurementUnit: '',
+    }
   }
 
   return {

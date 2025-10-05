@@ -39,9 +39,20 @@ const Statistics = () => {
       selectedFloorId: filterState.selectedFloorId,
       selectedUnitId: filterState.selectedUnitId,
     })
-    // Apply real-time modifications to occupancy data too
-    const modifiedData = getModifiedStatistics([baseOccupancy])
-    return modifiedData[0]
+
+    // Check if we're viewing Unit 501 specifically
+    const isUnit501 =
+      filterState.selectedFloorId === 'floor_5' &&
+      filterState.selectedUnitId === 'floor_5_unit_1'
+
+    if (isUnit501) {
+      // For Unit 501, don't apply real-time modifications - keep static and only respond to WebSocket
+      return baseOccupancy
+    } else {
+      // Apply real-time modifications to other occupancy data
+      const modifiedData = getModifiedStatistics([baseOccupancy])
+      return modifiedData[0]
+    }
   }, [
     filterState.selectedFloorId,
     filterState.selectedUnitId,

@@ -15,7 +15,24 @@ const DeviceControlCard = ({
   powerTypeLabel,
   icon: Icon,
 }: DeviceControlCardProps) => {
-  const { name, floor, progress, maxPower, isOn, deviceType } = deviceData
+  const { name, floor, progress, maxPower, isOn, deviceType, hasMalfunction } =
+    deviceData
+
+  // Get card styling based on malfunction status
+  const getCardStyling = () => {
+    if (hasMalfunction) {
+      return {
+        backgroundColor: 'rgba(255, 69, 69, 0.1)', // #FF4545 with 10% opacity
+        borderColor: '#FF4545',
+      }
+    }
+    return {
+      backgroundColor: '#1F293766',
+      borderColor: '#37415180',
+    }
+  }
+
+  const cardStyle = getCardStyling()
 
   // Calculate color opacity based on progress and on/off state
   const getProgressColor = () => {
@@ -23,6 +40,11 @@ const DeviceControlCard = ({
   }
 
   const getBulletColor = () => {
+    // If device has malfunction, show critical red
+    if (hasMalfunction) {
+      return '#FF4545'
+    }
+
     // For HVAC, bullet color is only based on on/off state, not temperature
     if (deviceType === 'HVAC') {
       return isOn ? '#4ADE80' : '#6B7280'
@@ -34,6 +56,9 @@ const DeviceControlCard = ({
   }
 
   const getIconButtonColor = () => {
+    // Gray out if device has malfunction
+    if (hasMalfunction) return '#374151'
+
     if (!isOn) return '#374151'
 
     // For HVAC, toggler opacity is only based on on/off state, not temperature
@@ -49,6 +74,9 @@ const DeviceControlCard = ({
   }
 
   const handleProgressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Disable control if device has malfunction
+    if (hasMalfunction) return
+
     const newProgress = parseInt(e.target.value)
     onProgressChange(newProgress)
 
@@ -66,6 +94,9 @@ const DeviceControlCard = ({
   }
 
   const handleToggle = () => {
+    // Disable control if device has malfunction
+    if (hasMalfunction) return
+
     // For HVAC, only toggle on/off state without changing temperature
     if (deviceType === 'HVAC') {
       onToggle(!isOn)
@@ -119,7 +150,13 @@ const DeviceControlCard = ({
   }
 
   return (
-    <div className='flex flex-col items-start border border-[#37415180] bg-[#1F293766] p-4 gap-3 font-roboto'>
+    <div
+      className='flex flex-col items-start border p-4 gap-3 font-roboto'
+      style={{
+        backgroundColor: cardStyle.backgroundColor,
+        borderColor: cardStyle.borderColor,
+      }}
+    >
       <div className='flex items-center justify-between w-full'>
         <div className='flex items-center gap-3'>
           <div
@@ -129,10 +166,17 @@ const DeviceControlCard = ({
           <div className='flex items-start flex-col'>
             <h4 className='text-white font-medium text-base'>{name}</h4>
             <p className='text-[#9CA3AF] text-sm font-normal'>{floor}</p>
+            {hasMalfunction && (
+              <p className='text-[#FF4545] text-xs font-medium'>MALFUNCTION</p>
+            )}
           </div>
         </div>
         <div
-          className='p-2 rounded-lg cursor-pointer border border-transparent hover:opacity-80 flex items-center justify-center transition-all duration-300'
+          className={`p-2 rounded-lg border border-transparent flex items-center justify-center transition-all duration-300 ${
+            hasMalfunction
+              ? 'opacity-50 cursor-not-allowed'
+              : 'cursor-pointer hover:opacity-80'
+          }`}
           style={{ backgroundColor: getIconButtonColor() }}
           onClick={handleToggle}
         >
@@ -155,7 +199,12 @@ const DeviceControlCard = ({
               max={getProgressMax()}
               value={progress}
               onChange={handleProgressChange}
-              className='w-full h-2 rounded-full appearance-none cursor-pointer range-slider transition-all duration-300'
+              disabled={hasMalfunction}
+              className={`w-full h-2 rounded-full appearance-none range-slider transition-all duration-300 ${
+                hasMalfunction
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'cursor-pointer'
+              }`}
               style={{
                 background: `linear-gradient(to right, ${getProgressColor()} 0%, ${getProgressColor()} ${
                   ((progress - getProgressMin()) /

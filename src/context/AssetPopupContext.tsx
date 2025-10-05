@@ -8,7 +8,16 @@ import React, {
 } from 'react'
 
 // Types for asset popup system
-export type AssetType = 'light' | 'hvac' | 'pump'
+export type AssetType =
+  | 'light'
+  | 'hvac'
+  | 'pump'
+  | 'pump1'
+  | 'pump2'
+  | 'pump3'
+  | 'pump4'
+  | 'pump5'
+  | 'pump6'
 
 export interface AssetClickMessage {
   click: AssetType
@@ -20,7 +29,7 @@ export interface AssetData {
   id: string
   name: string
   type: AssetType
-  status: 'operational' | 'warning' | 'error' | 'offline'
+  status: 'operational' | 'warning' | 'error' | 'offline' | 'critical'
   location: string
   specifications: {
     [key: string]: string | number

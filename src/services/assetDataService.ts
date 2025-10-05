@@ -35,7 +35,7 @@ const createAssetDataFromDevice = (
   const unit = floor?.units.find((u) => u.id === 'floor_5_unit_501')
 
   const location =
-    assetType === 'pump'
+    assetType === 'pump' || assetType.startsWith('pump')
       ? `${floor?.displayName || 'Floor 5'}`
       : `${floor?.displayName || 'Floor 5'} - ${
           unit?.displayName || 'Unit 501'
@@ -46,7 +46,11 @@ const createAssetDataFromDevice = (
     id: device.id || `${assetType}_${clickMessage.floor}_${clickMessage.unit}`,
     name: getAssetName(assetType, device),
     type: assetType,
-    status: device.isOn ? 'operational' : 'offline',
+    status: device.hasMalfunction
+      ? 'critical'
+      : device.isOn
+      ? 'operational'
+      : 'offline',
     location,
     specifications: getAssetSpecifications(assetType, device),
     metrics: getAssetMetrics(assetType, device),
@@ -68,6 +72,12 @@ const getAssetName = (assetType: AssetType, device: any): string => {
     case 'hvac':
       return device.name || 'Climate Control System'
     case 'pump':
+    case 'pump1':
+    case 'pump2':
+    case 'pump3':
+    case 'pump4':
+    case 'pump5':
+    case 'pump6':
       return device.name || 'Water Circulation Pump'
     default:
       return device.name || 'Smart Device'
@@ -104,6 +114,12 @@ const getAssetSpecifications = (
         Refrigerant: 'R-410A',
       }
     case 'pump':
+    case 'pump1':
+    case 'pump2':
+    case 'pump3':
+    case 'pump4':
+    case 'pump5':
+    case 'pump6':
       return {
         ...baseSpecs,
         'Flow Rate': '150 GPM',
@@ -189,6 +205,12 @@ const getAssetMetrics = (
       }
 
     case 'pump':
+    case 'pump1':
+    case 'pump2':
+    case 'pump3':
+    case 'pump4':
+    case 'pump5':
+    case 'pump6':
       return {
         'Flow Rate': {
           value: isOn ? '142' : '0',
@@ -229,6 +251,12 @@ const getAssetModel = (assetType: AssetType): string => {
     case 'hvac':
       return 'ClimateMax 3000'
     case 'pump':
+    case 'pump1':
+    case 'pump2':
+    case 'pump3':
+    case 'pump4':
+    case 'pump5':
+    case 'pump6':
       return 'AquaFlow Elite 150'
     default:
       return 'Unknown'
@@ -243,6 +271,12 @@ const getAssetManufacturer = (assetType: AssetType): string => {
     case 'hvac':
       return 'Carrier Corporation'
     case 'pump':
+    case 'pump1':
+    case 'pump2':
+    case 'pump3':
+    case 'pump4':
+    case 'pump5':
+    case 'pump6':
       return 'Grundfos'
     default:
       return 'Generic'
@@ -256,14 +290,32 @@ export const getAssetDataFromClick = (
   try {
     let targetDevice
 
-    if (clickMessage.click === 'pump') {
+    if (
+      clickMessage.click === 'pump' ||
+      clickMessage.click.startsWith('pump')
+    ) {
       // Get pump data for Floor 5
       const pumpDevices = getFloor5PumpData()
-      targetDevice =
-        pumpDevices.find(
-          (device: any) =>
-            device.floorId === 'floor_5' && device.deviceType === 'Pumps'
-        ) || pumpDevices[0] // Fallback to first pump
+
+      // For specific pump numbers (pump1, pump2, etc.), find the exact pump
+      if (
+        clickMessage.click.startsWith('pump') &&
+        clickMessage.click !== 'pump'
+      ) {
+        const pumpNumber = clickMessage.click.replace('pump', '')
+        targetDevice = pumpDevices.find((device: any) =>
+          device.id.endsWith(`_${pumpNumber}`)
+        )
+      }
+
+      // Fallback to first pump if specific pump not found or generic 'pump' click
+      if (!targetDevice) {
+        targetDevice =
+          pumpDevices.find(
+            (device: any) =>
+              device.floorId === 'floor_5' && device.deviceType === 'Pumps'
+          ) || pumpDevices[0]
+      }
     } else {
       // Get device data for Unit 501
       const unit501Devices = getUnit501DeviceData()

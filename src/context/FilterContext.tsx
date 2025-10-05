@@ -70,8 +70,13 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
 
     // Handle unit ID conversion for WebSocket
     if (filterState.selectedUnitId !== 'all') {
-      // Extract unit number from regular floors
-      unitValue = filterState.selectedUnit.replace('Unit ', '') || 'all'
+      // Check if it's a pumps room
+      if (filterState.selectedUnitId?.includes('_pumps_room')) {
+        unitValue = 'pumps_room'
+      } else {
+        // Extract unit number from regular floors
+        unitValue = filterState.selectedUnit.replace('Unit ', '') || 'all'
+      }
     }
 
     console.log(
@@ -95,29 +100,27 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
         `[FilterContext] Server requested: floor=${floor}, unit=${unit}`
       )
 
-      // // Send confirmation back to server instead of triggering filter update
-      // const floorDisplay =
-      //   floor === 'all'
-      //     ? 'All Floors'
-      //     : floor === 'basement'
-      //     ? 'Basement'
-      //     : floor === 'roof'
-      //     ? 'Roof'
-      //     : floor
-
-      // const unitDisplay = unit === 'all' ? 'All Units' : unit
-
-      // sendConfirmation(floorDisplay, unitDisplay)
-
       // Convert incoming values to proper display format for UI update
       let floorDisplayName = 'All Floors'
+      let floorId = 'all'
       if (floor !== 'all') {
         floorDisplayName = `Floor ${floor}`
+        floorId = `floor_${floor}`
       }
 
       let unitDisplayName = 'All Units'
+      let unitId = 'all'
       if (unit !== 'all' && floor !== 'all') {
-        unitDisplayName = `Unit ${unit}` // Use the actual unit number from the message
+        // Handle special case for "pumps_room"
+        if (unit === 'pumps_room') {
+          console.log('[FilterContext] Detected Pumps Room unit')
+          unitDisplayName = 'Pumps Room'
+          unitId = `floor_${floor}_pumps_room`
+        } else {
+          unitDisplayName = `Unit ${unit}` // Use the actual unit number from the message
+          // For regular units, need to map unit number to unit ID
+          unitId = getUnitIdFromDisplayName(floorId, unitDisplayName) || 'all'
+        }
       }
 
       console.log(
@@ -127,9 +130,13 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
       // Set flag to indicate this is a server update
       setIsServerUpdate(true)
 
-      // Update UI directly without triggering filter send
-      setFloor(floorDisplayName)
-      setUnit(unitDisplayName)
+      // Update filter state directly without calling setFloor/setUnit to avoid triggering effects
+      setFilterState({
+        selectedFloor: floorDisplayName,
+        selectedUnit: unitDisplayName,
+        selectedFloorId: floorId,
+        selectedUnitId: unitId,
+      })
     }
   }, [lastMessage, sendConfirmation])
 

@@ -19,6 +19,7 @@ export type DeviceControlItemType = {
   maxPower: string
   isOn: boolean
   deviceType: DeviceType
+  hasMalfunction?: boolean // Add malfunction status
 }
 
 export type DeviceControlType = {

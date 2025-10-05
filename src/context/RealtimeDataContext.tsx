@@ -142,7 +142,7 @@ const RealtimeDataContext = createContext<RealtimeDataContextType | undefined>(
 export const RealtimeDataProvider: React.FC<RealtimeDataProviderProps> = ({
   children,
 }) => {
-  const [isRealtimeEnabled, setIsRealtimeEnabled] = useState<boolean>(true)
+  const [isRealtimeEnabled, setIsRealtimeEnabled] = useState<boolean>(false)
   const [simulatedData, setSimulatedData] = useState<SimulatedData>({})
   const [isDataUpdating, setIsDataUpdating] = useState<boolean>(false)
   const [lastUpdateTime, setLastUpdateTime] = useState<number>(Date.now())
@@ -277,11 +277,7 @@ export const RealtimeDataProvider: React.FC<RealtimeDataProviderProps> = ({
         }
 
         // Special handling for Unit 501 occupancy - preserve WebSocket control
-        if (
-          stat.title.toLowerCase().includes('occupancy') &&
-          stat.value === '0' &&
-          stat.title.includes('Unit 501')
-        ) {
+        if (stat.title === 'Unit 501 Occupancy') {
           // Don't modify Unit 501 occupancy with simulation - let WebSocket control it
           return stat
         }

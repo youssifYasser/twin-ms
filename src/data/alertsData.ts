@@ -96,6 +96,19 @@ export const ALERTS_DATA: LocationAlertType[] = [
   ),
 
   createAlert(
+    'Pump System Critical Failure',
+    'Pump 2 technical malfunction detected - system shutdown required',
+    'floor_5',
+    'floor_5_pumps_room',
+    '15 min ago',
+    'critical',
+    'Pump Maintenance Team',
+    'active',
+    '#FF4545',
+    WaterIcon
+  ),
+
+  createAlert(
     'Water Leak Detection',
     'Water leak detected in restroom area - automatic shutoff triggered',
     'floor_2',
@@ -216,6 +229,19 @@ export const ALERTS_DATA: LocationAlertType[] = [
 
 // Generate maintenance tasks for different floors and units
 export const MAINTENANCE_TASKS_DATA: LocationMaintenanceTaskType[] = [
+  createMaintenanceTask(
+    'Pump 2 Emergency Repair',
+    'Critical pump malfunction - immediate technical repair required',
+    'floor_5',
+    'floor_5_pumps_room',
+    '2024-01-20',
+    'Pump Specialist Team',
+    '6 hours',
+    '#FF4545',
+    'urgent',
+    'critical'
+  ),
+
   createMaintenanceTask(
     'Monthly HVAC Filter Replacement',
     'Replace air filters in all HVAC units',
