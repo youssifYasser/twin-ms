@@ -45,13 +45,16 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
     selectedUnitId: 'all',
   })
 
+  // Track if the current update is from server synchronization
+  const [lastServerMessage, setLastServerMessage] = useState<any>(null)
+
   // Send filter updates via WebSocket (only for user-initiated changes)
   useEffect(() => {
-    // Check if this update matches the last server message (to avoid circular updates)
-    if (lastMessage && lastMessage.origin === 'server') {
-      const { floor: serverFloor, unit: serverUnit } = lastMessage
+    // Check if current state matches the last server message to prevent echoing
+    if (lastServerMessage) {
+      const { floor: serverFloor, unit: serverUnit } = lastServerMessage
 
-      // Convert current state to the same format as server messages
+      // Convert current state to server message format
       let currentFloorValue = 'all'
       let currentUnitValue = 'all'
 
@@ -70,13 +73,13 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
         }
       }
 
-      // If current state matches the last server message, don't send update
+      // If current state exactly matches the last server message, don't send
       if (
         currentFloorValue === serverFloor &&
         currentUnitValue === serverUnit
       ) {
         console.log(
-          '[FilterContext] Skipping update - matches last server message'
+          '[FilterContext] Skipping send - matches last server message'
         )
         return
       }
@@ -113,7 +116,7 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
     filterState.selectedUnitId,
     filterState.selectedUnit,
     sendFilterUpdate,
-    lastMessage,
+    lastServerMessage,
   ])
 
   useEffect(() => {
@@ -157,7 +160,10 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
         `[FilterContext] Updating UI: ${floorDisplayName} / ${unitDisplayName}`
       )
 
-      // Update filter state directly (the sending logic will automatically prevent circular updates)
+      // Store the last server message to prevent echoing it back
+      setLastServerMessage({ floor, unit })
+
+      // Update filter state directly
       setFilterState({
         selectedFloor: floorDisplayName,
         selectedUnit: unitDisplayName,
