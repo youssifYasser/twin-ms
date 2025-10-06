@@ -220,8 +220,11 @@ const SystemControl = () => {
           const isOn = updatedDevice.isOn
           const progress = updatedDevice.progress
 
+          // Determine if this is an atomic update (both progress and isOn updated together)
+          const isAtomicUpdate = 'isOn' in updates && 'progress' in updates
+
           if ('isOn' in updates) {
-            // Status change (on/off)
+            // Status change (on/off) - always send immediately
             const status = isOn ? '1' : '0'
 
             if (deviceType === 'Lighting' || deviceType === 'HVAC') {
@@ -232,8 +235,8 @@ const SystemControl = () => {
               // For security, elevators, and pumps, status only (pass deviceId for pumps)
               sendDeviceUpdate(deviceType, status, undefined, deviceId)
             }
-          } else if ('progress' in updates && isOn) {
-            // Value change with debouncing (only when device is on)
+          } else if ('progress' in updates && isOn && !isAtomicUpdate) {
+            // Value change with debouncing (only when device is on and not part of atomic update)
             const deviceKey = `${deviceId}-progress`
 
             // Clear existing timer
@@ -249,7 +252,6 @@ const SystemControl = () => {
               delete debounceTimers.current[deviceKey]
             }, 500) // 500ms debounce delay
           }
-
           return updatedDevice
         }
         return device
@@ -485,6 +487,7 @@ const SystemControl = () => {
                         updateDevice(device.id, { progress })
                       }
                       onToggle={(isOn) => updateDevice(device.id, { isOn })}
+                      onUpdate={(updates) => updateDevice(device.id, updates)}
                       powerTypeLabel={getPowerTypeLabel(device.deviceType)}
                       icon={getDeviceIcon(device.deviceType)}
                     />

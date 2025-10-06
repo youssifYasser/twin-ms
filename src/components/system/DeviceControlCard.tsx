@@ -4,6 +4,7 @@ interface DeviceControlCardProps {
   deviceData: DeviceControlItemType
   onProgressChange: (progress: number) => void
   onToggle: (isOn: boolean) => void
+  onUpdate?: (updates: { progress?: number; isOn?: boolean }) => void
   powerTypeLabel: string
   icon: IconComponent
 }
@@ -12,6 +13,7 @@ const DeviceControlCard = ({
   deviceData,
   onProgressChange,
   onToggle,
+  onUpdate,
   powerTypeLabel,
   icon: Icon,
 }: DeviceControlCardProps) => {
@@ -103,17 +105,31 @@ const DeviceControlCard = ({
       return
     }
 
-    // For other devices, toggle between min/max values
-    if (isOn) {
-      // Turn OFF: set to minimum value and isOn to false
-      const minValue = getProgressMin()
-      onProgressChange(minValue)
-      onToggle(false)
+    // For other devices, use atomic update if available, otherwise fall back to separate calls
+    if (onUpdate) {
+      // Atomic update - single call for both progress and toggle
+      if (isOn) {
+        // Turn OFF: set to minimum value and isOn to false
+        const minValue = getProgressMin()
+        onUpdate({ progress: minValue, isOn: false })
+      } else {
+        // Turn ON: set to maximum value and isOn to true
+        const maxValue = getProgressMax()
+        onUpdate({ progress: maxValue, isOn: true })
+      }
     } else {
-      // Turn ON: set to maximum value and isOn to true
-      const maxValue = getProgressMax()
-      onProgressChange(maxValue)
-      onToggle(true)
+      // Fallback to separate calls (legacy behavior)
+      if (isOn) {
+        // Turn OFF: set to minimum value and isOn to false
+        const minValue = getProgressMin()
+        onProgressChange(minValue)
+        onToggle(false)
+      } else {
+        // Turn ON: set to maximum value and isOn to true
+        const maxValue = getProgressMax()
+        onProgressChange(maxValue)
+        onToggle(true)
+      }
     }
   }
 
