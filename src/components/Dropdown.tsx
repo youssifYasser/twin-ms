@@ -49,12 +49,12 @@ const Dropdown = ({
     <div ref={dropdownRef} className={`relative ${className}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between px-3 py-2 bg-[#1F293799] border border-[#37415180] rounded-lg text-white text-sm font-medium hover:bg-[#1F2937BB] transition-colors duration-200 min-w-[120px] ${buttonClassName}`}
+        className={`flex items-center justify-between px-2 sm:px-3 py-2 bg-[#1F293799] border border-[#37415180] rounded-lg text-white text-xs sm:text-sm font-medium hover:bg-[#1F2937BB] transition-colors duration-200 min-w-[100px] sm:min-w-[120px] ${buttonClassName}`}
       >
         <span>{value || placeholder}</span>
         <ArrowDownIcon
-          width={16}
-          height={16}
+          width={14}
+          height={14}
           fill='#9CA3AF'
           className={`transform transition-transform duration-200 ${
             isOpen ? 'rotate-180' : ''
@@ -63,12 +63,12 @@ const Dropdown = ({
       </button>
 
       {isOpen && (
-        <div className='absolute top-full left-0 mt-1 w-full bg-[#1F2937] border border-[#37415180] rounded-lg shadow-lg z-50 overflow-hidden'>
+        <div className='absolute top-full left-0 mt-1 w-full bg-[#1F2937] border border-[#37415180] rounded-lg shadow-lg z-50 overflow-hidden max-h-60 overflow-y-auto'>
           {options.map((option, index) => (
             <button
               key={index}
               onClick={() => handleSelect(option)}
-              className={`w-full px-3 py-2 text-left text-sm hover:bg-[#374151] transition-colors duration-150 ${
+              className={`w-full px-2 sm:px-3 py-2 text-left text-xs sm:text-sm hover:bg-[#374151] transition-colors duration-150 ${
                 value === option
                   ? 'bg-[#37988A] text-white font-medium'
                   : 'text-[#D1D5DB]'

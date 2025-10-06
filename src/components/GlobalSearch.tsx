@@ -257,8 +257,8 @@ const GlobalSearch = ({ className = '' }: GlobalSearchProps) => {
 
       {/* Search Results */}
       {isOpen && searchQuery.trim() && (
-        <div className='absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden'>
-          <div className='overflow-y-auto' style={{ maxHeight: '360px' }}>
+        <div className='absolute top-full left-0 right-0 mt-2 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 max-h-80 sm:max-h-96 overflow-hidden'>
+          <div className='overflow-y-auto' style={{ maxHeight: '320px' }}>
             <div className='p-2'>
               {/* Results Count */}
               <div className='text-xs text-slate-400 mb-2 px-2'>
@@ -272,7 +272,7 @@ const GlobalSearch = ({ className = '' }: GlobalSearchProps) => {
                   <button
                     key={result.id}
                     onClick={() => handleResultClick(result)}
-                    className='w-full text-left p-3 rounded-lg cursor-pointer transition-colors hover:bg-slate-700/50'
+                    className='w-full text-left p-2 sm:p-3 rounded-lg cursor-pointer transition-colors hover:bg-slate-700/50'
                   >
                     <div className='flex items-start gap-3'>
                       {/* Icon */}

@@ -90,7 +90,7 @@ const FloorUnitFilter = ({ className = '' }: FloorUnitFilterProps) => {
     <div className={`relative ${className}`} ref={dropdownRef}>
       {/* Main Button */}
       <button
-        className='flex items-center gap-3 bg-slate-700/50 rounded-lg px-4 py-3 hover:bg-slate-600/50 transition-colors cursor-pointer w-full min-w-[280px]'
+        className='flex items-center gap-3 bg-slate-700/50 rounded-lg px-3 sm:px-4 py-3 hover:bg-slate-600/50 transition-colors cursor-pointer w-full min-w-[240px] sm:min-w-[280px]'
         onClick={() => setIsOpen(!isOpen)}
       >
         {/* Icon Container */}
@@ -156,10 +156,10 @@ const FloorUnitFilter = ({ className = '' }: FloorUnitFilterProps) => {
 
       {/* Dropdown */}
       {isOpen && (
-        <div className='absolute top-full right-0 mt-2 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 w-96'>
-          <div className='p-6'>
+        <div className='absolute top-full left-0 sm:right-0 sm:left-auto mt-2 bg-slate-800 border border-slate-600 rounded-lg shadow-xl z-50 w-full sm:w-96 max-w-[calc(100vw-2rem)]'>
+          <div className='p-4 sm:p-6 max-h-[70vh] overflow-y-auto'>
             <div className='flex items-center justify-between mb-4'>
-              <h3 className='text-lg font-semibold text-white'>
+              <h3 className='text-base sm:text-lg font-semibold text-white'>
                 Select Floor & Unit
               </h3>
               {(filterState.selectedFloor !== 'All Floors' ||
@@ -181,7 +181,7 @@ const FloorUnitFilter = ({ className = '' }: FloorUnitFilterProps) => {
               <label className='block text-sm font-medium text-slate-400 mb-3'>
                 Floor
               </label>
-              <div className='grid grid-cols-5 gap-2 max-h-32 overflow-y-auto'>
+              <div className='grid grid-cols-3 sm:grid-cols-5 gap-2 max-h-32 overflow-y-auto'>
                 <button
                   onClick={() => handleFloorSelect('All Floors')}
                   className={`px-3 py-2 text-sm rounded-lg cursor-pointer transition-colors font-medium ${
@@ -224,7 +224,7 @@ const FloorUnitFilter = ({ className = '' }: FloorUnitFilterProps) => {
                   <label className='block text-sm font-medium text-slate-400 mb-3'>
                     Units on {filterState.selectedFloor}
                   </label>
-                  <div className='space-y-2 max-h-40 overflow-y-auto'>
+                  <div className='space-y-2 max-h-40 sm:max-h-48 overflow-y-auto'>
                     <button
                       onClick={() => handleUnitSelect('All Units')}
                       className={`w-full text-left px-4 py-2.5 text-sm rounded-lg cursor-pointer transition-colors font-medium ${

@@ -5,7 +5,7 @@ import FloorUnitFilter from '@/components/FloorUnitFilter'
 import PageStats from '@/components/PageStats'
 import GlobalSearch from '@/components/GlobalSearch'
 import { useRealtimeData } from '@/context/RealtimeDataContext'
-import { MenuIcon, ChevronDownIcon } from 'lucide-react'
+import { MenuIcon, ChevronDownIcon, MoreHorizontalIcon } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
 interface AppBarProps {
@@ -18,16 +18,39 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
   const { isRealtimeEnabled, toggleRealtime, timePeriod, setTimePeriod } =
     useRealtimeData()
   const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const tabletDropdownRef = useRef<HTMLDivElement>(null)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node
+
+      // Handle time period dropdowns (both desktop and tablet)
+      const isOutsideDesktopDropdown =
+        dropdownRef.current && !dropdownRef.current.contains(target)
+      const isOutsideTabletDropdown =
+        tabletDropdownRef.current && !tabletDropdownRef.current.contains(target)
+
+      if (isOutsideDesktopDropdown || isOutsideTabletDropdown) {
+        // Only close if the click is not inside the mobile menu
+        if (!mobileMenuRef.current || !mobileMenuRef.current.contains(target)) {
+          setShowTimePeriodDropdown(false)
+        }
+      }
+
+      // Handle mobile menu
       if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(target) &&
+        // Don't close mobile menu if clicking on time period dropdowns
+        (!dropdownRef.current || !dropdownRef.current.contains(target)) &&
+        (!tabletDropdownRef.current ||
+          !tabletDropdownRef.current.contains(target))
       ) {
-        setShowTimePeriodDropdown(false)
+        setShowMobileMenu(false)
       }
     }
 
@@ -60,24 +83,31 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
 
   return (
     <header className='bg-appbar-gradient border-b border-primary-border backdrop-blur-24 shadow-appbar z-50'>
-      <div className='flex items-center justify-between px-6 py-4 shadow-lg'>
-        <div className='flex items-center space-x-4'>
+      <div className='flex items-center justify-between px-3 sm:px-4 lg:px-6 py-3 sm:py-4 shadow-lg'>
+        {/* Left Section */}
+        <div className='flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1'>
           {showLogo && (
-            <div className='flex items-center '>
+            <div className='flex items-center'>
               <MenuIcon
-                className='mr-4 cursor-pointer active:scale-90 transition-transform duration-200'
+                className='mr-2 sm:mr-4 cursor-pointer active:scale-90 transition-transform duration-200 flex-shrink-0'
                 onClick={toggleSidebar}
+                size={20}
               />
-              <Logo className='h-6 mr-4' width={90} height={24} />
-              <div className='w-px h-6 bg-primary-border mr-4' />
+              <Logo
+                className='h-5 sm:h-6 mr-2 sm:mr-4 hidden sm:block'
+                width={75}
+                height={20}
+              />
+              <div className='w-px h-4 sm:h-6 bg-primary-border mr-2 sm:mr-4 hidden sm:block' />
             </div>
           )}
-          <h2 className='text-2xl font-bold font-roboto text-white'>
+          <h2 className='text-lg sm:text-xl lg:text-2xl font-bold font-roboto text-white truncate'>
             {getPageTitle(currentPage)}
           </h2>
         </div>
 
-        <div className='flex items-center space-x-4'>
+        {/* Right Section - Desktop */}
+        <div className='hidden xl:flex items-center space-x-4'>
           {/* Real-time Data Toggle */}
           <div className='flex items-center gap-0'>
             <button
@@ -99,7 +129,7 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
               <span>Live Data</span>
             </button>
 
-            {/* Time Period Dropdown - Only show on Statistics page when real-time is disabled */}
+            {/* Time Period Dropdown */}
             {!isRealtimeEnabled && (
               <div className='relative' ref={dropdownRef}>
                 <button
@@ -145,9 +175,92 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
 
           {/* Floor & Unit Filter */}
           <FloorUnitFilter />
+        </div>
 
-          {/* WebSocket Connection Status */}
-          {/* <WebSocketStatus /> */}
+        {/* Right Section - Mobile */}
+        <div className='flex xl:hidden items-center space-x-2'>
+          {/* Real-time Data Toggle - Icon Only */}
+          <button
+            className={`flex items-center px-4 py-2 text-sm font-roboto transition-all duration-200 rounded-lg ${
+              isRealtimeEnabled
+                ? 'bg-green-600 text-white hover:bg-green-700 shadow-lg '
+                : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+            }`}
+            onClick={toggleRealtime}
+            title={
+              isRealtimeEnabled
+                ? 'Disable Real-time Data'
+                : 'Enable Real-time Data'
+            }
+          >
+            <RealtimeIcon
+              width={16}
+              height={16}
+              className={`mr-2 ${isRealtimeEnabled ? 'animate-pulse' : ''}`}
+            />
+            <span>Live Data</span>
+          </button>
+
+          {/* Mobile Menu Button */}
+          <div className='relative' ref={mobileMenuRef}>
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className='p-2 text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors duration-200'
+              title='More options'
+            >
+              <MoreHorizontalIcon size={18} />
+            </button>
+
+            {/* Mobile Menu Dropdown */}
+            {showMobileMenu && (
+              <div className='absolute top-full mt-1 right-0 transform -translate-x-0 bg-[#1F2937] border border-[#374151] rounded-lg shadow-lg z-50 w-80 max-w-[calc(100vw-1rem)]'>
+                {/* Time Period Selection */}
+                {!isRealtimeEnabled && (
+                  <div className='p-3 border-b border-[#374151]'>
+                    <div className='text-xs text-gray-400 mb-2'>
+                      Time Period
+                    </div>
+                    <div className='flex gap-2'>
+                      {timePeriodOptions.map((option) => (
+                        <button
+                          key={option}
+                          onClick={() => {
+                            setTimePeriod(option)
+                            setShowMobileMenu(false)
+                          }}
+                          className={`px-3 py-1 text-xs rounded transition-colors ${
+                            timePeriod === option
+                              ? 'bg-[#3BA091] text-white'
+                              : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Global Search */}
+                <div className='p-3 border-b border-[#374151]'>
+                  <div className='text-xs text-gray-400 mb-2'>Search</div>
+                  <GlobalSearch className='w-full' />
+                </div>
+
+                {/* Page Statistics */}
+                <div className='p-3 border-b border-[#374151]'>
+                  <div className='text-xs text-gray-400 mb-2'>Statistics</div>
+                  <PageStats currentPage={currentPage} />
+                </div>
+
+                {/* Floor & Unit Filter */}
+                <div className='p-3'>
+                  <div className='text-xs text-gray-400 mb-2'>Filters</div>
+                  <FloorUnitFilter />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </header>
