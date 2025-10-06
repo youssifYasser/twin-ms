@@ -181,7 +181,7 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
         <div className='flex xl:hidden items-center space-x-2'>
           {/* Real-time Data Toggle - Icon Only */}
           <button
-            className={`flex items-center px-4 py-2 text-sm font-roboto transition-all duration-200 rounded-lg ${
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-roboto transition-all duration-200 rounded-lg ${
               isRealtimeEnabled
                 ? 'bg-green-600 text-white hover:bg-green-700 shadow-lg '
                 : 'bg-gray-600 text-gray-300 hover:bg-gray-500'
@@ -196,10 +196,13 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
             <RealtimeIcon
               width={16}
               height={16}
-              className={`mr-2 ${isRealtimeEnabled ? 'animate-pulse' : ''}`}
+              className={`${isRealtimeEnabled ? 'animate-pulse' : ''}`}
             />
-            <span>Live Data</span>
+            <span className='hidden lg:inline'>Live Data</span>
           </button>
+
+          {/* Floor & Unit Filter */}
+          <FloorUnitFilter />
 
           {/* Mobile Menu Button */}
           <div className='relative' ref={mobileMenuRef}>
@@ -241,22 +244,16 @@ const AppBar = ({ currentPage, showLogo, toggleSidebar }: AppBarProps) => {
                   </div>
                 )}
 
-                {/* Global Search */}
-                <div className='p-3 border-b border-[#374151]'>
-                  <div className='text-xs text-gray-400 mb-2'>Search</div>
-                  <GlobalSearch className='w-full' />
-                </div>
-
                 {/* Page Statistics */}
                 <div className='p-3 border-b border-[#374151]'>
                   <div className='text-xs text-gray-400 mb-2'>Statistics</div>
                   <PageStats currentPage={currentPage} />
                 </div>
 
-                {/* Floor & Unit Filter */}
-                <div className='p-3'>
-                  <div className='text-xs text-gray-400 mb-2'>Filters</div>
-                  <FloorUnitFilter />
+                {/* Global Search */}
+                <div className='p-3 border-b border-[#374151]'>
+                  <div className='text-xs text-gray-400 mb-2'>Search</div>
+                  <GlobalSearch className='w-full' />
                 </div>
               </div>
             )}
