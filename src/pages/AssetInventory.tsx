@@ -225,10 +225,10 @@ const AssetInventory = () => {
   }
 
   return (
-    <div className='p-6'>
+    <div className='p-3 md:p-6'>
       {/* Header */}
-      <div className='flex items-center justify-between mb-6'>
-        <h2 className='text-2xl font-bold'>Asset Inventory</h2>
+      <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6'>
+        <h2 className='text-xl md:text-2xl font-bold'>Asset Inventory</h2>
         <div className='flex items-center gap-3'>
           <button
             onClick={() => setShowAddDialog(true)}
@@ -251,7 +251,7 @@ const AssetInventory = () => {
             Reset Filters
           </button>
         </div>
-        <div className='grid grid-cols-7 gap-4'>
+        <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 md:gap-4'>
           <div>
             <label className='block text-sm font-medium text-slate-400 mb-2'>
               Name

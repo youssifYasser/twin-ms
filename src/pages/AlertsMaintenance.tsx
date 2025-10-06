@@ -396,11 +396,11 @@ const AlertsMaintenance = () => {
   const severityOptions = ['All', 'Critical', 'High', 'Medium', 'Low']
 
   return (
-    <div className='space-y-6'>
+    <div className='space-y-4 md:space-y-6'>
       {/* Display current filter information */}
       {filterState.selectedFloor !== 'All Floors' && (
-        <div className='bg-bg-card backdrop-blur-24 p-4 rounded-lg border border-primary-border'>
-          <p className='text-white text-center text-lg'>
+        <div className='bg-bg-card backdrop-blur-24 p-3 md:p-4 rounded-lg border border-primary-border'>
+          <p className='text-white text-center text-base md:text-lg'>
             Showing alerts for:{' '}
             <span className='font-bold text-active-page'>
               {filterState.selectedFloor}
@@ -411,18 +411,20 @@ const AlertsMaintenance = () => {
         </div>
       )}
 
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'>
         {alertsStats.map((stat, index) => {
           return <AlertStatsCard key={index} statisticsItem={stat} />
         })}
       </div>
 
-      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 font-roboto'>
-        <div className='col-span-2 bg-bg-card backdrop-blur-24 p-6 rounded-none flex flex-col gap-6 h-fit'>
-          <div className='flex items-center justify-between'>
-            <h3 className='text-xl font-bold text-white'>Active Alerts</h3>
+      <div className='grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6 font-roboto'>
+        <div className='xl:col-span-2 bg-bg-card backdrop-blur-24 p-4 md:p-6 rounded-none flex flex-col gap-4 md:gap-6 h-fit'>
+          <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3'>
+            <h3 className='text-lg md:text-xl font-bold text-white'>
+              Active Alerts
+            </h3>
             {/* Severity (alert status) dropdown Filter and Refresh button */}
-            <div className='flex items-stretch gap-2'>
+            <div className='flex items-stretch gap-2 self-start sm:self-auto'>
               <Dropdown
                 options={severityOptions}
                 value={severityFilter}
@@ -458,12 +460,14 @@ const AlertsMaintenance = () => {
           </div>
         </div>
 
-        <div className='bg-bg-card backdrop-blur-24 p-6 rounded-none flex flex-col gap-6 h-fit'>
-          <div className='flex items-center justify-between'>
-            <h3 className='font-bold text-white text-lg'>Maintenance Tasks</h3>
+        <div className='bg-bg-card backdrop-blur-24 p-4 md:p-6 rounded-none flex flex-col gap-4 md:gap-6 h-fit'>
+          <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-3'>
+            <h3 className='font-bold text-white text-base md:text-lg'>
+              Maintenance Tasks
+            </h3>
             <button
               onClick={handleAddTask}
-              className='flex items-center justify-center gap-2 bg-[#37988A] hover:bg-[#37988ABB] px-4 py-2 rounded-lg transition-colors duration-200 text-white'
+              className='flex items-center justify-center gap-2 bg-[#37988A] hover:bg-[#37988ABB] px-3 md:px-4 py-2 rounded-lg transition-colors duration-200 text-white text-sm md:text-base self-start sm:self-auto'
               title='Add new maintenance task'
             >
               <PlusIcon width={16} height={16} />

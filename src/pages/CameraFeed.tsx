@@ -49,11 +49,11 @@ const CameraFeed = () => {
   }, [filterState.selectedFloorId, filterState.selectedUnitId])
 
   return (
-    <div className='space-y-6 w-full max-w-full'>
+    <div className='space-y-4 md:space-y-6 w-full max-w-full'>
       {/* Video Status Banner */}
       {!enableVideos && (
-        <div className='bg-orange-500/20 border border-orange-500/30 backdrop-blur-24 p-4 rounded-lg'>
-          <p className='text-orange-400 text-center text-sm'>
+        <div className='bg-orange-500/20 border border-orange-500/30 backdrop-blur-24 p-3 md:p-4 rounded-lg'>
+          <p className='text-orange-400 text-center text-sm md:text-base'>
             📹 <strong>Video Playback Disabled</strong> - Videos are currently
             turned off for testing. Use the toggle below to enable them.
           </p>
@@ -62,8 +62,8 @@ const CameraFeed = () => {
 
       {/* Filter Status Display */}
       {filterState.selectedFloor !== 'All Floors' && (
-        <div className='bg-bg-card backdrop-blur-24 p-4 rounded-lg border border-primary-border'>
-          <p className='text-white text-center text-lg'>
+        <div className='bg-bg-card backdrop-blur-24 p-3 md:p-4 rounded-lg border border-primary-border'>
+          <p className='text-white text-center text-base md:text-lg'>
             Cameras for:{' '}
             <span className='font-bold text-active-page'>
               {filterState.selectedFloor}
@@ -74,29 +74,31 @@ const CameraFeed = () => {
         </div>
       )}
 
-      <div className='flex flex-col gap-6 w-full max-w-full'>
-        <div className='flex items-center w-full justify-between'>
-          <div className='flex items-center gap-3'>
+      <div className='flex flex-col gap-4 md:gap-6 w-full max-w-full'>
+        <div className='flex flex-col lg:flex-row lg:items-center w-full justify-between gap-4'>
+          <div className='flex flex-col sm:flex-row sm:items-center gap-3'>
             {/* Either choose "Live Camera Feeds" or "AI Detection" and the active one have the bg-[#3BA091] */}
-            <button
-              onClick={() => setActiveTab('live')}
-              className={`py-1 px-3 rounded-lg font-bold text-sm transition-colors ${
-                activeTab === 'live' ? 'bg-[#3BA091]' : 'bg-transparent'
-              }`}
-            >
-              Live Camera Feeds
-            </button>
-            <button
-              onClick={() => setActiveTab('ai')}
-              className={`py-1 px-3 rounded-lg font-bold text-sm transition-colors ${
-                activeTab === 'ai' ? 'bg-[#3BA091]' : 'bg-transparent'
-              }`}
-            >
-              AI Detection
-            </button>
+            <div className='flex items-center gap-2'>
+              <button
+                onClick={() => setActiveTab('live')}
+                className={`py-1 px-3 rounded-lg font-bold text-sm transition-colors ${
+                  activeTab === 'live' ? 'bg-[#3BA091]' : 'bg-transparent'
+                }`}
+              >
+                Live Camera Feeds
+              </button>
+              <button
+                onClick={() => setActiveTab('ai')}
+                className={`py-1 px-3 rounded-lg font-bold text-sm transition-colors ${
+                  activeTab === 'ai' ? 'bg-[#3BA091]' : 'bg-transparent'
+                }`}
+              >
+                AI Detection
+              </button>
+            </div>
 
             {/* Simple Video Toggle */}
-            <div className='flex items-center gap-2 ml-4 pl-4 border-l border-gray-600'>
+            <div className='flex items-center gap-2 pl-0 sm:pl-4 sm:border-l border-gray-600'>
               <button
                 onClick={() => setEnableVideos(!enableVideos)}
                 className={`py-1 px-3 rounded-lg font-bold text-sm transition-colors ${
@@ -121,7 +123,7 @@ const CameraFeed = () => {
               </button>
             </div>
           </div>
-          <div className='flex items-center gap-3'>
+          <div className='flex items-center gap-2 md:gap-3 self-start lg:self-auto'>
             {/* Grid Items Per Row Dropdown */}
             <div className='relative'>
               <button
@@ -190,14 +192,14 @@ const CameraFeed = () => {
         {viewMode === 'grid' ? (
           // Grid View
           <div
-            className={`grid gap-6 ${
+            className={`grid gap-4 md:gap-6 ${
               itemsPerRow === 2
-                ? 'grid-cols-1 md:grid-cols-2'
+                ? 'grid-cols-1 lg:grid-cols-2'
                 : itemsPerRow === 3
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                ? 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'
                 : itemsPerRow === 4
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'
-                : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-5'
+                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
             }`}
           >
             {cameras.map((camera) => (
