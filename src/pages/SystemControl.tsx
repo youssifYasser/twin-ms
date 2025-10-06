@@ -47,6 +47,11 @@ const SystemControl = () => {
   // Debounce timers for value changes
   const debounceTimers = useRef<{ [key: string]: NodeJS.Timeout }>({})
 
+  // Track last updates to prevent duplicates
+  const lastUpdates = useRef<{
+    [key: string]: { updates: any; timestamp: number }
+  }>({})
+
   // Send device control message to server
   const sendDeviceUpdate = useCallback(
     (
@@ -55,6 +60,27 @@ const SystemControl = () => {
       value?: string,
       deviceId?: string
     ) => {
+      // Create message signature for deduplication
+      const messageSignature = `${deviceType}-${status}-${value || ''}-${
+        deviceId || ''
+      }`
+      const now = Date.now()
+
+      // Check if we recently sent this exact message
+      const lastSent = lastUpdates.current[`msg-${messageSignature}`]
+      if (lastSent && now - lastSent.timestamp < 200) {
+        console.log(
+          `[SystemControl] ✅ WebSocket duplicate prevented: ${messageSignature}`
+        )
+        return
+      }
+
+      // Record this message
+      lastUpdates.current[`msg-${messageSignature}`] = {
+        updates: messageSignature,
+        timestamp: now,
+      }
+
       let asset = ''
 
       switch (deviceType) {
@@ -180,6 +206,8 @@ const SystemControl = () => {
     deviceId: string,
     updates: Partial<LocationDeviceType>
   ) => {
+    console.log(`[SystemControl] updateDevice called for ${deviceId}:`, updates)
+
     setDeviceData((prevData) =>
       prevData.map((device) => {
         if (device.id === deviceId) {
@@ -222,35 +250,84 @@ const SystemControl = () => {
 
           // Determine if this is an atomic update (both progress and isOn updated together)
           const isAtomicUpdate = 'isOn' in updates && 'progress' in updates
+          console.log(
+            `[SystemControl] Device ${deviceId}: isAtomicUpdate=${isAtomicUpdate}, updates:`,
+            updates
+          )
 
           if ('isOn' in updates) {
             // Status change (on/off) - always send immediately
             const status = isOn ? '1' : '0'
+            console.log(`[SystemControl] Sending isOn update: status=${status}`)
+
+            // Clear any pending debounce timers for this device since we're sending an atomic update
+            const deviceKey = `${deviceId}-progress`
+            if (debounceTimers.current[deviceKey]) {
+              console.log(
+                `[SystemControl] Clearing pending debounce timer for ${deviceId}`
+              )
+              clearTimeout(debounceTimers.current[deviceKey])
+              delete debounceTimers.current[deviceKey]
+            }
 
             if (deviceType === 'Lighting' || deviceType === 'HVAC') {
               // For lighting and HVAC, include value
               const value = isOn ? progress.toString() : '0'
+              console.log(`[SystemControl] Sending with value: ${value}`)
               sendDeviceUpdate(deviceType, status, value, deviceId)
             } else {
               // For security, elevators, and pumps, status only (pass deviceId for pumps)
+              console.log(`[SystemControl] Sending status only`)
               sendDeviceUpdate(deviceType, status, undefined, deviceId)
             }
-          } else if ('progress' in updates && isOn && !isAtomicUpdate) {
-            // Value change with debouncing (only when device is on and not part of atomic update)
-            const deviceKey = `${deviceId}-progress`
-
-            // Clear existing timer
-            if (debounceTimers.current[deviceKey]) {
-              clearTimeout(debounceTimers.current[deviceKey])
-            }
-
-            // Set new timer for debounced value update
-            debounceTimers.current[deviceKey] = setTimeout(() => {
+          } else if ('progress' in updates) {
+            console.log(`[SystemControl] Progress-only update detected`)
+            // Progress-only change
+            if (isAtomicUpdate) {
+              console.log(
+                `[SystemControl] This shouldn't happen - atomic but progress-only`
+              )
+              // This shouldn't happen since atomic updates should have both progress and isOn,
+              // but handle just in case - this is a progress-only atomic update
               if (deviceType === 'Lighting' || deviceType === 'HVAC') {
-                sendDeviceUpdate(deviceType, '1', progress.toString(), deviceId)
+                const status = isOn ? '1' : '0'
+                sendDeviceUpdate(
+                  deviceType,
+                  status,
+                  progress.toString(),
+                  deviceId
+                )
               }
-              delete debounceTimers.current[deviceKey]
-            }, 500) // 500ms debounce delay
+            } else if (isOn) {
+              console.log(
+                `[SystemControl] Setting up debounced progress update`
+              )
+              // Manual slider change with debouncing (only when device is on)
+              const deviceKey = `${deviceId}-progress`
+
+              // Clear existing timer
+              if (debounceTimers.current[deviceKey]) {
+                clearTimeout(debounceTimers.current[deviceKey])
+              }
+
+              // Set new timer for debounced value update
+              debounceTimers.current[deviceKey] = setTimeout(() => {
+                console.log(`[SystemControl] Sending debounced progress update`)
+                if (deviceType === 'Lighting' || deviceType === 'HVAC') {
+                  sendDeviceUpdate(
+                    deviceType,
+                    '1',
+                    progress.toString(),
+                    deviceId
+                  )
+                }
+                delete debounceTimers.current[deviceKey]
+              }, 500) // 500ms debounce delay
+            } else {
+              console.log(
+                `[SystemControl] Device is off, not sending progress update`
+              )
+            }
           }
           return updatedDevice
         }
@@ -258,6 +335,25 @@ const SystemControl = () => {
       })
     )
   }
+
+  // Create stable callbacks to prevent re-renders from causing duplicate calls
+  const handleDeviceUpdate = useCallback(
+    (deviceId: string, updates: Partial<LocationDeviceType>) => {
+      updateDevice(deviceId, updates)
+    },
+    []
+  )
+
+  const handleDeviceProgressChange = useCallback(
+    (deviceId: string, progress: number) => {
+      updateDevice(deviceId, { progress })
+    },
+    []
+  )
+
+  const handleDeviceToggle = useCallback((deviceId: string, isOn: boolean) => {
+    updateDevice(deviceId, { isOn })
+  }, [])
 
   // Get devices for current tab
   const getCurrentDevices = () => {
@@ -484,10 +580,12 @@ const SystemControl = () => {
                       key={device.id}
                       deviceData={device}
                       onProgressChange={(progress) =>
-                        updateDevice(device.id, { progress })
+                        handleDeviceProgressChange(device.id, progress)
                       }
-                      onToggle={(isOn) => updateDevice(device.id, { isOn })}
-                      onUpdate={(updates) => updateDevice(device.id, updates)}
+                      onToggle={(isOn) => handleDeviceToggle(device.id, isOn)}
+                      onUpdate={(updates) =>
+                        handleDeviceUpdate(device.id, updates)
+                      }
                       powerTypeLabel={getPowerTypeLabel(device.deviceType)}
                       icon={getDeviceIcon(device.deviceType)}
                     />

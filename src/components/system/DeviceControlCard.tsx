@@ -1,4 +1,5 @@
 import { DeviceControlItemType, IconComponent } from '@/types'
+import { useRef } from 'react'
 
 interface DeviceControlCardProps {
   deviceData: DeviceControlItemType
@@ -19,6 +20,12 @@ const DeviceControlCard = ({
 }: DeviceControlCardProps) => {
   const { name, floor, progress, maxPower, isOn, deviceType, hasMalfunction } =
     deviceData
+
+  // Track intended isOn state during drag operations to handle async React state updates
+  const intendedIsOnRef = useRef(isOn)
+
+  // Update ref when props change
+  intendedIsOnRef.current = isOn
 
   // Get card styling based on malfunction status
   const getCardStyling = () => {
@@ -80,18 +87,64 @@ const DeviceControlCard = ({
     if (hasMalfunction) return
 
     const newProgress = parseInt(e.target.value)
-    onProgressChange(newProgress)
+    console.log(
+      `[DeviceControlCard] Progress change to ${newProgress}, device: ${name}, onUpdate available: ${!!onUpdate}`
+    )
 
     // For HVAC, temperature slider doesn't affect on/off state
     if (deviceType === 'HVAC') {
+      console.log(
+        `[DeviceControlCard] HVAC progress change - calling onProgressChange only`
+      )
+      onProgressChange(newProgress)
       return // Temperature change only, no on/off state change
     }
 
-    // For other devices, automatically update isOn state based on progress
-    if (newProgress === 0 || newProgress === getProgressMin()) {
-      onToggle(false)
-    } else if (!isOn && newProgress > 0) {
-      onToggle(true)
+    // For other devices, use atomic update if available to prevent duplicate messages
+    if (onUpdate) {
+      console.log(`[DeviceControlCard] Using atomic update for progress change`)
+      // Use ref for current intended state (handles async React state updates during drag)
+      const currentIntendedIsOn = intendedIsOnRef.current
+
+      // Atomic update - handle progress and potential isOn change together
+      if (newProgress === 0 || newProgress === getProgressMin()) {
+        // Progress set to 0 - turn device off
+        console.log(
+          `[DeviceControlCard] Atomic update: progress ${newProgress}, isOn false`
+        )
+        intendedIsOnRef.current = false
+        onUpdate({ progress: newProgress, isOn: false })
+      } else if (!currentIntendedIsOn && newProgress > 0) {
+        // Progress set above 0 and device was off - turn device on
+        console.log(
+          `[DeviceControlCard] Atomic update: progress ${newProgress}, isOn true`
+        )
+        intendedIsOnRef.current = true
+        onUpdate({ progress: newProgress, isOn: true })
+      } else if (currentIntendedIsOn && newProgress > 0) {
+        // Device is already on, just update progress (should be debounced)
+        console.log(
+          `[DeviceControlCard] Progress-only update: ${newProgress} (device already on)`
+        )
+        onUpdate({ progress: newProgress })
+      } else {
+        // Fallback - progress change only, no isOn state change
+        console.log(
+          `[DeviceControlCard] Atomic update: progress only ${newProgress}`
+        )
+        onUpdate({ progress: newProgress })
+      }
+    } else {
+      console.log(`[DeviceControlCard] Fallback to separate calls`)
+      // Fallback to separate calls (legacy behavior)
+      onProgressChange(newProgress)
+
+      // Automatically update isOn state based on progress
+      if (newProgress === 0 || newProgress === getProgressMin()) {
+        onToggle(false)
+      } else if (!isOn && newProgress > 0) {
+        onToggle(true)
+      }
     }
   }
 
@@ -111,10 +164,12 @@ const DeviceControlCard = ({
       if (isOn) {
         // Turn OFF: set to minimum value and isOn to false
         const minValue = getProgressMin()
+        intendedIsOnRef.current = false
         onUpdate({ progress: minValue, isOn: false })
       } else {
         // Turn ON: set to maximum value and isOn to true
         const maxValue = getProgressMax()
+        intendedIsOnRef.current = true
         onUpdate({ progress: maxValue, isOn: true })
       }
     } else {
