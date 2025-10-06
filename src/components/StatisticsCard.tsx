@@ -68,45 +68,45 @@ const StatisticsCard = ({
 
   return (
     <div
-      className={`bg-bg-card p-4 backdrop-blur-24 flex flex-col items-start justify-between gap-2 rounded-none w-full transition-all duration-300 ${
+      className={`bg-bg-card p-3 md:p-4 backdrop-blur-24 flex flex-col items-start justify-between gap-2 rounded-none w-full transition-all duration-300 ${
         isAnimating ? 'ring-2 ring-blue-400 ring-opacity-50 scale-[1.02]' : ''
       }`}
     >
-      <div className='flex items-center gap-2'>
-        <h3 className='text-base font-bold text-[#aeb0b3] uppercase'>
+      <div className='flex items-center gap-2 w-full'>
+        <h3 className='text-sm md:text-base font-bold text-[#aeb0b3] uppercase flex-1 min-w-0'>
           {title}
         </h3>
         {measurementUnit && (
-          <span className='text-sm font-normal text-[#6b757c]'>
+          <span className='text-xs md:text-sm font-normal text-[#6b757c] flex-shrink-0'>
             {measurementUnit}
           </span>
         )}
         {/* Real-time indicator */}
         {isRealtimeEnabled && (
-          <div className='flex items-center ml-auto'>
+          <div className='flex items-center ml-auto flex-shrink-0'>
             <div className='w-2 h-2 bg-green-500 rounded-full animate-pulse'></div>
           </div>
         )}
       </div>
-      <div className='flex items-baseline gap-2'>
+      <div className='flex items-baseline gap-2 w-full'>
         <span
-          className={`text-4xl font-bold text-[#e3e5e7] transition-all duration-300 ${
+          className={`text-2xl md:text-3xl lg:text-4xl font-bold text-[#e3e5e7] transition-all duration-300 ${
             isAnimating ? 'scale-110' : ''
           }`}
         >
           {value}
         </span>
         {measurementUnit && (
-          <span className='text-xl font-normal text-[#519a96]'>
+          <span className='text-lg md:text-xl font-normal text-[#519a96]'>
             {measurementUnit}
           </span>
         )}
       </div>
-      <div className='flex items-center gap-1'>
+      <div className='flex items-center gap-1 w-full overflow-hidden'>
         {getTrendIcon()}
 
         <span
-          className='font-normal text-xl transition-colors duration-300'
+          className='font-normal text-lg md:text-xl transition-colors duration-300'
           style={{ color: getPercentageChangeColor() }}
         >
           {percentageChange}%
@@ -116,14 +116,15 @@ const StatisticsCard = ({
           <img
             src={trendGraph}
             alt='Trend graph'
-            className='mb-5 ml-8'
-            width={109}
-            height={22}
+            className='mb-3 md:mb-5 ml-4 md:ml-8 flex-shrink-0'
+            width={80}
+            height={16}
+            style={{ width: 'auto', height: '16px', maxWidth: '109px' }}
           />
         )}
         {/* Show live data indicator when real-time is enabled */}
         {isRealtimeEnabled && (
-          <div className='ml-8 flex items-center gap-2'>
+          <div className='ml-4 md:ml-8 flex items-center gap-2 flex-shrink-0'>
             <span className='text-xs text-gray-400 font-medium'>LIVE</span>
             <div className='flex gap-1'>
               <div className='w-1 h-3 bg-blue-400 rounded-full animate-pulse'></div>
