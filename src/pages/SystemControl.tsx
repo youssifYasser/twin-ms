@@ -174,14 +174,14 @@ const SystemControl = () => {
             return device
           }
 
-          // Special protection for Pump 1 on Floor 5 - always keep it on
+          // Special handling for Pump 1 on Floor 5 - allow normal operation but ensure preset respects its default ON state
           if (device.id === 'pump_floor_5_1') {
             const deviceConfig = presetConfig[device.deviceType]?.[device.id]
             if (deviceConfig) {
               return {
                 ...device,
                 progress: deviceConfig.progress,
-                isOn: true, // Force to stay on regardless of preset
+                isOn: deviceConfig.isOn, // Allow preset to control it normally
               }
             }
             return device
@@ -216,32 +216,8 @@ const SystemControl = () => {
             return device
           }
 
-          // Special protection for Pump 1 on Floor 5 - always keep it on
-          if (deviceId === 'pump_floor_5_1') {
-            // if ('isOn' in updates && !updates.isOn) {
-            //   console.log('Pump 1 Floor 5 must remain on - ignoring off command')
-            //   return device // Don't allow turning off
-            // }
-            if ('progress' in updates && updates.progress === 0) {
-              console.log(
-                'Pump 1 Floor 5 must remain on - preventing progress = 0'
-              )
-              return device // Don't allow setting progress to 0 (which effectively turns it off)
-            }
-            if ('isOn' in updates && updates.isOn) {
-              console.log('Pump 1 Floor 5 - allowing turn on command')
-              // Allow turn-on commands to proceed normally
-            }
-          }
-
+          // Allow normal updates for all devices including Pump 1 Floor 5
           const updatedDevice = { ...device, ...updates }
-
-          // Failsafe: If Pump 1 Floor 5 somehow ends up off, force it back on
-          // if (deviceId === 'pump_floor_5_1' && !updatedDevice.isOn) {
-          //   console.log('Pump 1 Floor 5 failsafe - forcing back to ON state')
-          //   updatedDevice.isOn = true
-          //   updatedDevice.progress = Math.max(updatedDevice.progress, 50) // Ensure minimum progress
-          // }
 
           // Send WebSocket message for device control changes
           const deviceType = updatedDevice.deviceType
@@ -450,11 +426,11 @@ const SystemControl = () => {
     ]
   }
   return (
-    <div className='space-y-6'>
+    <div className='space-y-4 md:space-y-6'>
       {/* Display current filter information */}
       {filterState.selectedFloor !== 'All Floors' && (
-        <div className='bg-bg-card backdrop-blur-24 p-4 rounded-lg border border-primary-border'>
-          <p className='text-white text-center text-lg'>
+        <div className='bg-bg-card backdrop-blur-24 p-3 sm:p-4 rounded-lg border border-primary-border'>
+          <p className='text-white text-center text-sm sm:text-base md:text-lg'>
             Showing devices for:{' '}
             <span className='font-bold text-active-page'>
               {filterState.selectedFloor}
@@ -465,17 +441,17 @@ const SystemControl = () => {
         </div>
       )}
 
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6'>
         {statisticsData.map((stat, index) => (
           <StatisticsCard key={index} statisticsItem={stat} />
         ))}
       </div>
 
-      <div className='w-full bg-bg-card backdrop-blur-24 p-6 flex flex-col items-start gap-4'>
-        <h3 className='font-roboto text-white text-lg font-bold'>
+      <div className='w-full bg-bg-card backdrop-blur-24 p-3 sm:p-4 md:p-6 flex flex-col items-start gap-3 md:gap-4'>
+        <h3 className='font-roboto text-white text-base sm:text-lg font-bold'>
           Preset Scenarios
         </h3>
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 md:gap-4 w-full'>
           {PRESET_SCENARIOS.map((preset) => (
             <PresetCard
               key={preset.id}
@@ -487,34 +463,34 @@ const SystemControl = () => {
         </div>
       </div>
 
-      <div className='w-full bg-bg-card backdrop-blur-24 p-6 flex flex-col items-start gap-6'>
+      <div className='w-full bg-bg-card backdrop-blur-24 p-3 sm:p-4 md:p-6 flex flex-col items-start gap-4 md:gap-6'>
         {/* Main Control Tabs */}
-        <div className='flex gap-1 mb-6'>
+        <div className='flex gap-1 mb-3 sm:mb-4 md:mb-6 overflow-x-auto'>
           <button
             onClick={() => setActiveMainTab('device-control')}
-            className={`px-6 py-3 rounded-lg text-sm font-medium cursor-pointer whitespace-nowrap flex items-center gap-2 transition-all ${
+            className={`px-3 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg text-xs sm:text-sm font-medium cursor-pointer whitespace-nowrap flex items-center gap-2 transition-all flex-shrink-0 ${
               activeMainTab === 'device-control'
                 ? 'bg-active-page text-white shadow-lg'
                 : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
             }`}
           >
-            <Settings className='w-4 h-4' />
+            <Settings className='w-3 h-3 sm:w-4 sm:h-4' />
             Device Control
-            <span className='bg-slate-600 text-slate-300 px-2 py-1 rounded-full text-xs'>
+            <span className='bg-slate-600 text-slate-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs'>
               {totalDeviceCount}
             </span>
           </button>
           <button
             onClick={() => setActiveMainTab('automation')}
-            className={`px-6 py-3 rounded-lg text-sm font-medium cursor-pointer whitespace-nowrap flex items-center gap-2 transition-all ${
+            className={`px-3 sm:px-4 md:px-6 py-2 md:py-3 rounded-lg text-xs sm:text-sm font-medium cursor-pointer whitespace-nowrap flex items-center gap-2 transition-all flex-shrink-0 ${
               activeMainTab === 'automation'
                 ? 'bg-active-page text-white shadow-lg'
                 : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
             }`}
           >
-            <Zap className='w-4 h-4' />
+            <Zap className='w-3 h-3 sm:w-4 sm:h-4' />
             Automation Rules
-            <span className='bg-slate-600 text-slate-300 px-2 py-1 rounded-full text-xs'>
+            <span className='bg-slate-600 text-slate-300 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs'>
               {automationCounts.total}
             </span>
           </button>
@@ -523,10 +499,10 @@ const SystemControl = () => {
         {/* Device Control Tab Content */}
         {activeMainTab === 'device-control' && (
           <>
-            <h3 className='font-roboto text-white text-lg font-bold'>
+            <h3 className='font-roboto text-white text-base sm:text-lg font-bold'>
               Device Control
             </h3>
-            <div className='w-full bg-[#1F293799] p-1 flex items-center gap-1'>
+            <div className='w-full bg-[#1F293799] p-1 flex items-center gap-1 overflow-x-auto'>
               {deviceControls.map((device, index) => {
                 const isActive = selectedDeviceControl === device.name
                 const textColor = isActive ? 'text-white' : 'text-[#9CA3AF]'
@@ -536,11 +512,11 @@ const SystemControl = () => {
                       setSelectedDeviceControl(device.name as DeviceType)
                     }
                     key={index}
-                    className={`flex items-center gap-2 py-2 px-4 transition-all duration-300 rounded-lg  ${
+                    className={`flex items-center gap-2 py-2 px-2 sm:px-3 md:px-4 transition-all duration-300 rounded-lg whitespace-nowrap min-w-fit ${
                       selectedDeviceControl === device.name
                         ? 'bg-bg-card pointer-events-none'
                         : 'bg-transparent cursor-pointer'
-                    }  `}
+                    }`}
                   >
                     <device.icon
                       fill={
@@ -550,7 +526,7 @@ const SystemControl = () => {
                       }
                     />
                     <p
-                      className={`font-roboto ${textColor} text-base font-normal`}
+                      className={`font-roboto ${textColor} text-sm sm:text-base font-normal`}
                     >
                       {device.name}
                     </p>
@@ -563,7 +539,7 @@ const SystemControl = () => {
                 )
               })}
             </div>
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 w-full gap-4 max-h-[30rem] overflow-y-auto pr-2'>
+            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 w-full gap-3 md:gap-4 max-h-[20rem] sm:max-h-[25rem] md:max-h-[30rem] lg:max-h-[35rem] overflow-y-auto pr-2'>
               {getCurrentDevices().length > 0 ? (
                 getCurrentDevices().map((device) =>
                   device.deviceType === 'HVAC' ? (
@@ -606,10 +582,10 @@ const SystemControl = () => {
         {/* Automation Rules Tab Content */}
         {activeMainTab === 'automation' && (
           <>
-            <h3 className='font-roboto text-white text-lg font-bold'>
+            <h3 className='font-roboto text-white text-base sm:text-lg font-bold'>
               Automation Rules
             </h3>
-            <div className='w-full bg-[#1F293799] p-1 flex items-center gap-1'>
+            <div className='w-full bg-[#1F293799] p-1 flex items-center gap-1 overflow-x-auto'>
               {getAutomationTypeCounts().map((type, index) => {
                 const isActive = selectedAutomationType === type.name
                 const textColor = isActive ? 'text-white' : 'text-[#9CA3AF]'
@@ -625,7 +601,7 @@ const SystemControl = () => {
                       )
                     }
                     key={index}
-                    className={`flex items-center gap-2 py-2 px-4 transition-all duration-300 rounded-lg cursor-pointer ${
+                    className={`flex items-center gap-2 py-2 px-2 sm:px-3 md:px-4 transition-all duration-300 rounded-lg cursor-pointer whitespace-nowrap min-w-fit ${
                       selectedAutomationType === type.name
                         ? 'bg-bg-card pointer-events-none'
                         : 'bg-transparent'
@@ -639,7 +615,7 @@ const SystemControl = () => {
                       }`}
                     />
                     <p
-                      className={`font-roboto ${textColor} text-base font-normal`}
+                      className={`font-roboto ${textColor} text-sm sm:text-base font-normal`}
                     >
                       {type.displayName}
                     </p>
@@ -652,8 +628,8 @@ const SystemControl = () => {
                 )
               })}
             </div>
-            <div className='w-full max-h-[30rem] overflow-y-auto pr-2'>
-              <div className='grid grid-cols-1 gap-4'>
+            <div className='w-full max-h-[20rem] sm:max-h-[25rem] md:max-h-[30rem] lg:max-h-[35rem] overflow-y-auto pr-2'>
+              <div className='grid grid-cols-1 gap-3 md:gap-4'>
                 {getCurrentAutomationRules().length > 0 ? (
                   getCurrentAutomationRules().map((rule) => (
                     <AutomationRuleCard

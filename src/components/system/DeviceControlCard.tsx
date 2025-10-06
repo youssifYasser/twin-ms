@@ -196,6 +196,7 @@ const DeviceControlCard = ({
         return `${progress}°C`
       case 'Security':
       case 'Elevators':
+      case 'Pumps':
         return isOn ? 'ON' : 'OFF'
       default:
         return `${progress}%`
