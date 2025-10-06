@@ -45,16 +45,41 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
     selectedUnitId: 'all',
   })
 
-  // Flag to prevent circular updates when server changes filters
-  const [isServerUpdate, setIsServerUpdate] = useState(false)
-
   // Send filter updates via WebSocket (only for user-initiated changes)
   useEffect(() => {
-    console.log('updaing the server with new filter state, ', isServerUpdate)
-    // Skip sending update if this is a server-initiated change
-    if (isServerUpdate) {
-      setIsServerUpdate(false) // Reset the flag
-      return
+    // Check if this update matches the last server message (to avoid circular updates)
+    if (lastMessage && lastMessage.origin === 'server') {
+      const { floor: serverFloor, unit: serverUnit } = lastMessage
+
+      // Convert current state to the same format as server messages
+      let currentFloorValue = 'all'
+      let currentUnitValue = 'all'
+
+      if (filterState.selectedFloorId !== 'all') {
+        if (filterState.selectedFloorId?.startsWith('floor_')) {
+          currentFloorValue = filterState.selectedFloorId.replace('floor_', '')
+        }
+      }
+
+      if (filterState.selectedUnitId !== 'all') {
+        if (filterState.selectedUnitId?.includes('_pumps_room')) {
+          currentUnitValue = 'pumps_room'
+        } else {
+          currentUnitValue =
+            filterState.selectedUnit.replace('Unit ', '') || 'all'
+        }
+      }
+
+      // If current state matches the last server message, don't send update
+      if (
+        currentFloorValue === serverFloor &&
+        currentUnitValue === serverUnit
+      ) {
+        console.log(
+          '[FilterContext] Skipping update - matches last server message'
+        )
+        return
+      }
     }
 
     let floorValue = 'all'
@@ -88,12 +113,17 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
     filterState.selectedUnitId,
     filterState.selectedUnit,
     sendFilterUpdate,
-    // Remove isServerUpdate from dependencies to prevent re-running when flag changes
+    lastMessage,
   ])
 
   useEffect(() => {
     console.log('[FilterContext] Processing server message:', lastMessage)
-    if (lastMessage && lastMessage.floor && lastMessage.unit) {
+    if (
+      lastMessage &&
+      lastMessage.floor &&
+      lastMessage.unit &&
+      lastMessage.origin === 'server'
+    ) {
       const { floor, unit } = lastMessage
 
       console.log(
@@ -127,10 +157,7 @@ export const FilterProvider: React.FC<FilterProviderProps> = ({ children }) => {
         `[FilterContext] Updating UI: ${floorDisplayName} / ${unitDisplayName}`
       )
 
-      // Set flag to indicate this is a server update
-      setIsServerUpdate(true)
-
-      // Update filter state directly without calling setFloor/setUnit to avoid triggering effects
+      // Update filter state directly (the sending logic will automatically prevent circular updates)
       setFilterState({
         selectedFloor: floorDisplayName,
         selectedUnit: unitDisplayName,
