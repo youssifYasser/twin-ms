@@ -82,6 +82,9 @@ BUILDING_DATA.forEach((floor) => {
 
 // Generate HVAC devices (per floor - serves all units on that floor)
 BUILDING_DATA.forEach((floor) => {
+  // Special case for Floor 5 - HVAC should be on at 25°C for Unit 501
+  const isFloor5 = floor.id === 'floor_5'
+
   DEVICES_DATA.push(
     createDevice(
       `hvac_${floor.id}`,
@@ -89,8 +92,8 @@ BUILDING_DATA.forEach((floor) => {
       'HVAC',
       floor.id,
       `${floor.id}_all`,
-      Math.floor(Math.random() * 16 + 15), // Generate temperature between 15-30°C
-      Math.random() > 0.2,
+      isFloor5 ? 25 : Math.floor(Math.random() * 16 + 15), // Floor 5 at 25°C, others between 15-30°C
+      isFloor5 ? true : Math.random() > 0.2, // Floor 5 HVAC is on, others random
       '2400W'
     )
   )
