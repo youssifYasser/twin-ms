@@ -123,10 +123,13 @@ const AssetPopup: React.FC<AssetPopupProps> = ({
   if (!isVisible) return null
 
   return (
-    <div className='fixed inset-0 z-50 pointer-events-none'>
+    <div
+      className='fixed inset-0 z-50 pointer-events-none'
+      style={{ marginTop: 0 }}
+    >
       {/* Background overlay */}
       <div
-        className='absolute inset-0 bg-black/50 pointer-events-auto'
+        className='absolute inset-0  bg-black/50 pointer-events-auto'
         onClick={onClose}
       />
 
