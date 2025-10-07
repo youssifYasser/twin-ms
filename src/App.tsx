@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import Layout from '@/components/Layout'
 import AppRouter from '@/components/AppRouter'
-import AssetPopup from '@/components/AssetPopup'
 import { FilterProvider } from '@/context/FilterContext'
 import { WebSocketProvider } from '@/context/WebSocketContext'
 import { RealtimeDataProvider } from '@/context/RealtimeDataContext'
@@ -24,8 +23,7 @@ export type PageType =
 
 // Inner app component that has access to contexts
 const AppContent = () => {
-  const { showAssetPopup, isVisible, currentAsset, hideAssetPopup } =
-    useAssetPopup()
+  const { showAssetPopup } = useAssetPopup()
 
   // Handle asset click from WebSocket
   const handleAssetClick = useCallback(
@@ -53,15 +51,6 @@ const AppContent = () => {
             <Layout>
               <AppRouter />
             </Layout>
-
-            {/* Asset Popup */}
-            {isVisible && currentAsset && (
-              <AssetPopup
-                asset={currentAsset}
-                isVisible={isVisible}
-                onClose={hideAssetPopup}
-              />
-            )}
           </FilterProvider>
         </RealtimeDataProvider>
       </WebSocketProvider>

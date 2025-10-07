@@ -28,6 +28,8 @@ import {
   getAutomationRulesByCategory,
   getAutomationRuleCounts,
 } from '@/data/automationData'
+import { useAssetPopup } from '@/context/AssetPopupContext'
+import AssetPopup from '@/components/AssetPopup'
 
 const SystemControl = () => {
   const [activePreset, setActivePreset] = useState<number | null>(1)
@@ -43,6 +45,7 @@ const SystemControl = () => {
   const { filterState } = useFilter()
   const { sendDeviceControl } = useWebSocket()
   const { getModifiedStatistics } = useRealtimeData()
+  const { isVisible, currentAsset, hideAssetPopup } = useAssetPopup()
 
   // Debounce timers for value changes
   const debounceTimers = useRef<{ [key: string]: NodeJS.Timeout }>({})
@@ -661,6 +664,15 @@ const SystemControl = () => {
           </>
         )}
       </div>
+
+      {/* Asset Popup - Only visible on Statistics page */}
+      {isVisible && currentAsset && (
+        <AssetPopup
+          asset={currentAsset}
+          isVisible={isVisible}
+          onClose={hideAssetPopup}
+        />
+      )}
     </div>
   )
 }
